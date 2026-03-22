@@ -1,6 +1,6 @@
 # OpenLTM
 
-OpenLTM is an open codebase aiming to provide a pipeline to develop and evaluate large time-series models.
+OpenLTM is an open codebase aiming to provide a pipeline to develop and evaluate large time-series models. 
 
 > For deep time series models, we recommend [Time-Series-Library](https://github.com/thuml/Time-Series-Library) and this comprehensive [Survey](https://arxiv.org/abs/2407.13278).
 
