@@ -5,6 +5,7 @@ params:
   limit_csv_path: "/home/aicode/sherwin/dataset/JJ/2-limit-1.csv"
   data_root: "/home/aicode/sherwin/dataset/JJ"
   results_root: "./results"
+  split_file: "setting/PCA101A.yaml"
   alarm_quality_rmse_factor: 0.01
   eval_steps: 15
 

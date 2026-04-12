@@ -280,6 +280,13 @@ class Exp_Forecast(Exp_Basic):
         trues = torch.cat(trues, dim=0).numpy()
         print('preds shape:', preds.shape)
         print('trues shape:', trues.shape)
+
+        # inverse transform to original scale
+        if test_data.scale:
+            N, T, C = preds.shape
+            preds = test_data.inverse_transform(preds.reshape(-1, C)).reshape(N, T, C)
+            trues = test_data.inverse_transform(trues.reshape(-1, C)).reshape(N, T, C)
+
         if self.args.covariate:
             preds = preds[:, :, -1]
             trues = trues[:, :, -1]
