@@ -1,10 +1,11 @@
-from data_provider.data_loader import UnivariateDatasetBenchmark, MultivariateDatasetBenchmark, Global_Temp, Global_Wind, Dataset_ERA5_Pretrain, Dataset_ERA5_Pretrain_Test, UTSD, UTSD_Npy
+from data_provider.data_loader import UnivariateDatasetBenchmark, MultivariateDatasetBenchmark, MultivariateDatasetYAMLSplit, Global_Temp, Global_Wind, Dataset_ERA5_Pretrain, Dataset_ERA5_Pretrain_Test, UTSD, UTSD_Npy
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 
 data_dict = {
     'UnivariateDatasetBenchmark': UnivariateDatasetBenchmark,
     'MultivariateDatasetBenchmark': MultivariateDatasetBenchmark,
+    'MultivariateDatasetYAMLSplit': MultivariateDatasetYAMLSplit,
     'Global_Temp': Global_Temp,
     'Global_Wind': Global_Wind,
     'Era5_Pretrain': Dataset_ERA5_Pretrain,
@@ -26,6 +27,12 @@ def data_provider(args, flag):
         drop_last = False
         batch_size = args.batch_size
 
+    extra_kwargs = {}
+    if args.data == 'MultivariateDatasetYAMLSplit':
+        extra_kwargs['split_file'] = getattr(args, 'split_file', None)
+        extra_kwargs['features'] = getattr(args, 'features', 'M')
+        extra_kwargs['target'] = getattr(args, 'target', None)
+
     if flag in ['train', 'val']:
         data_set = Data(
             root_path=args.root_path,
@@ -34,7 +41,8 @@ def data_provider(args, flag):
             size=[args.seq_len, args.input_token_len, args.output_token_len],
             nonautoregressive=args.nonautoregressive,
             test_flag=args.test_flag,
-            subset_rand_ratio=args.subset_rand_ratio
+            subset_rand_ratio=args.subset_rand_ratio,
+            **extra_kwargs,
         )
     else:
         data_set = Data(
@@ -44,7 +52,8 @@ def data_provider(args, flag):
             size=[args.test_seq_len, args.input_token_len, args.test_pred_len],
             nonautoregressive=args.nonautoregressive,
             test_flag=args.test_flag,
-            subset_rand_ratio=args.subset_rand_ratio
+            subset_rand_ratio=args.subset_rand_ratio,
+            **extra_kwargs,
         )
     print(flag, len(data_set))
     if args.ddp:

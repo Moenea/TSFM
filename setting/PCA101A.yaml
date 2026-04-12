@@ -1,0 +1,26 @@
+# JJ PCA101A dataset splits for Timer-XL fine-tuning.
+#
+# Read by data_provider.data_loader.MultivariateDatasetYAMLSplit.
+# Only the train / val / test keys are consumed; everything else is just
+# documentation. Paths are resolved relative to the run.py --root_path arg
+# (which should point at /home/aicode/sherwin/dataset/JJ/).
+#
+# Same YAML serves all three task modes — no need to duplicate it:
+#   * M  (multivariate -> multivariate): default, no extra flag
+#   * Co (multivariate -> univariate via covariate mask): add --covariate
+#   * U  (univariate single-target):     would need a 'features=S' switch
+#                                         in the dataset (not yet wired)
+#
+# Convention: target column MUST be the LAST column of every CSV.
+# For PCA101A this is satisfied — target = 0202B_PCA101A is the last column.
+
+target: 0202B_PCA101A   # documentation only; not parsed
+
+train:
+  - PCA101A/2FCC_PCA101A_smooth_training1.csv
+
+val:
+  - PCA101A/2FCC_PCA101A_smooth_valid1.csv
+
+test:
+  - PCA101A/2FCC_PCA101A_smooth_testing1_long.csv

@@ -291,4 +291,13 @@ class Exp_Forecast(Exp_Basic):
         f.write('\n')
         f.write('\n')
         f.close()
+
+        # save results (compatible with MyTimeXer convention)
+        result_path = './results/' + setting + '/'
+        if not os.path.exists(result_path):
+            os.makedirs(result_path)
+        np.save(result_path + 'metrics.npy', np.array([mae, mse, rmse, mape, mspe]))
+        np.save(result_path + 'pred.npy', preds)
+        np.save(result_path + 'true.npy', trues)
+        print(f'Results saved to {result_path}')
         return

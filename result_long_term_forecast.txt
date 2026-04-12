@@ -1,0 +1,27 @@
+forecast_PCA101A_U_full_shot_timer_xl_MultivariateDatasetYAMLSplit_sl1536_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0  
+mse:0.03031189553439617, mae:0.08313057571649551
+
+forecast_PCA101A_Co_full_shot_timer_xl_MultivariateDatasetYAMLSplit_sl1536_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0  
+mse:0.024698033928871155, mae:0.07853089272975922
+
+zeroshot_PCA101A_U  
+mse:0.031477540731430054, mae:0.08800153434276581
+
+zeroshot_PCA101A_M  
+mse:0.03991224989295006, mae:0.10144207626581192
+
+zeroshot_PCA101A_Co  
+mse:0.031923990696668625, mae:0.09032540023326874
+
+forecast_PCA101A_U_full_shot_timer_xl_MultivariateDatasetYAMLSplit_sl1536_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0  
+mse:0.03031189553439617, mae:0.08313057571649551
+
+forecast_PCA101A_U_full_shot_timer_xl_MultivariateDatasetYAMLSplit_sl1536_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0  
+mse:0.03031189553439617, mae:0.08313057571649551
+
+forecast_PCA101A_Co_full_shot_timer_xl_MultivariateDatasetYAMLSplit_sl1536_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0  
+mse:0.024698033928871155, mae:0.07853089272975922
+
+forecast_PCA101A_Co_full_shot_timer_xl_MultivariateDatasetYAMLSplit_sl1536_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0  
+mse:0.024698033928871155, mae:0.07853089272975922
+
