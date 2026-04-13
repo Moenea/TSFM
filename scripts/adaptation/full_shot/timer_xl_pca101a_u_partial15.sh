@@ -6,7 +6,7 @@
 export CUDA_VISIBLE_DEVICES=0
 
 model_name=timer_xl
-token_num=16
+token_num=15
 token_len=96
 seq_len=$[$token_num*$token_len]
 

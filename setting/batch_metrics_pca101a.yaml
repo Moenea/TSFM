@@ -1,5 +1,5 @@
 params:
-  seq_len: 1536
+  seq_len: 1440
   pred_len: 96
   target: "0202B_PCA101A"
   limit_csv_path: "/home/aicode/sherwin/dataset/JJ/2-limit-1.csv"
@@ -17,13 +17,13 @@ model_dirs:
   - name: "Zeroshot-Co"
     result_dir: "zeroshot_PCA101A_Co"
   - name: "Finetuned-U"
-    result_dir: "forecast_PCA101A_U_full_shot_timer_xl_MultivariateDatasetYAMLSplit_sl1536_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+    result_dir: "forecast_PCA101A_U_full_shot_timer_xl_MultivariateDatasetYAMLSplit_sl1440_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
   - name: "Finetuned-Co"
-    result_dir: "forecast_PCA101A_Co_full_shot_timer_xl_MultivariateDatasetYAMLSplit_sl1536_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+    result_dir: "forecast_PCA101A_Co_full_shot_timer_xl_MultivariateDatasetYAMLSplit_sl1440_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
   - name: "Partial15-U"
-    result_dir: "forecast_PCA101A_U_partial15_timer_xl_MultivariateDatasetYAMLSplit_sl1536_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+    result_dir: "forecast_PCA101A_U_partial15_timer_xl_MultivariateDatasetYAMLSplit_sl1440_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
   - name: "Partial15-Co"
-    result_dir: "forecast_PCA101A_Co_partial15_timer_xl_MultivariateDatasetYAMLSplit_sl1536_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+    result_dir: "forecast_PCA101A_Co_partial15_timer_xl_MultivariateDatasetYAMLSplit_sl1440_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
 
 test:
   - PCA101A/2FCC_PCA101A_smooth_testing1_long.csv
