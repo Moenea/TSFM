@@ -8,6 +8,7 @@ params:
   split_file: "setting/PCA101A.yaml"
   alarm_quality_rmse_factor: 0.01
   eval_steps: 15
+  input_clean_steps: 30
 
 model_dirs:
   - name: "Zeroshot-U"

@@ -201,6 +201,7 @@ def main():
     results_root = Path(params.get('results_root', './results'))
 
     eval_steps = params.get('eval_steps', None)
+    input_clean_steps = params.get('input_clean_steps', seq_len)
 
     if not limit_csv_path:
         raise SystemExit('limit_csv_path must be set')
@@ -267,8 +268,14 @@ def main():
         true_patch_alarm = (true_t > high) | (true_t < low)
         pred_alarm_patch = np.any(pred_patch_alarm, axis=1)
         true_alarm_patch = np.any(true_patch_alarm, axis=1)
-        half_start = pred_len_eff // 2
+        # Use eval_steps as the effective prediction length for half_start so that
+        # when pred_len=96 but only eval_steps=15 are the actual useful steps,
+        # we look at the latter half of those 15 steps (not 96//2=48 which would
+        # be beyond the actual predictions).
+        _eff_steps = eval_steps if eval_steps is not None else pred_len_eff
+        half_start = _eff_steps // 2
         true_alarm_last5 = np.any(true_patch_alarm[:, half_start:], axis=1)
+        pred_alarm_last5 = np.any(pred_patch_alarm[:, half_start:], axis=1)
 
         patch_se = (pred_t - true_t) ** 2
         patch_ae = np.abs(pred_t - true_t)
@@ -285,6 +292,7 @@ def main():
         else:
             pred_quality_ok = np.ones(len(pred_t), dtype=bool)
         pred_alarm_patch_qf = pred_alarm_patch & pred_quality_ok
+        pred_alarm_last5_qf = pred_alarm_last5 & pred_quality_ok
 
         # --- Conditional MSE/RMSE/MAE/MAPE ---
         def safe_mean(arr, mask):
@@ -324,9 +332,9 @@ def main():
 
         # --- Alarm ratios ---
         ratio_pred_in_true = safe_mean(
-            pred_alarm_patch.astype(float), true_alarm_last5)
+            pred_alarm_last5.astype(float), true_alarm_last5)
         ratio_pred_in_no_true = safe_mean(
-            pred_alarm_patch.astype(float), ~true_alarm_patch)
+            pred_alarm_last5.astype(float), ~true_alarm_patch)
 
         # --- Event-level lead time ---
         window_starts = build_window_starts(seq_len, pred_len, file_lengths)
@@ -361,7 +369,7 @@ def main():
 
         # --- Clean-input variants ---
         input_clean = np.array([
-            not np.any(true_alarm_series[max(0, ws - seq_len):ws])
+            not np.any(true_alarm_series[max(0, ws - input_clean_steps):ws])
             for ws in window_starts
         ], dtype=bool)
 
@@ -369,9 +377,9 @@ def main():
         true_alarm_patch_clean = true_alarm_patch & input_clean
 
         ratio_pred_in_true_clean = safe_mean(
-            pred_alarm_patch.astype(float), true_alarm_last5_clean)
+            pred_alarm_last5.astype(float), true_alarm_last5_clean)
         ratio_pred_in_no_true_clean = safe_mean(
-            pred_alarm_patch.astype(float), ~true_alarm_patch_clean & input_clean)
+            pred_alarm_last5.astype(float), ~true_alarm_patch_clean & input_clean)
 
         lead_times_clean = []
         for (s, _) in true_events:
@@ -399,9 +407,9 @@ def main():
 
         # --- Quality-filtered variants ---
         ratio_pred_in_true_qf = safe_mean(
-            pred_alarm_patch_qf.astype(float), true_alarm_last5)
+            pred_alarm_last5_qf.astype(float), true_alarm_last5)
         ratio_pred_in_no_true_qf = safe_mean(
-            pred_alarm_patch_qf.astype(float), ~true_alarm_patch)
+            pred_alarm_last5_qf.astype(float), ~true_alarm_patch)
 
         lead_times_qf = []
         for (s, _) in true_events:
@@ -429,11 +437,12 @@ def main():
 
         # --- Clean + quality-filtered ---
         pred_alarm_patch_clean_qf = pred_alarm_patch & input_clean & pred_quality_ok
+        pred_alarm_last5_clean_qf = pred_alarm_last5 & input_clean & pred_quality_ok
 
         ratio_pred_in_true_clean_qf = safe_mean(
-            pred_alarm_patch_clean_qf.astype(float), true_alarm_last5_clean)
+            pred_alarm_last5_clean_qf.astype(float), true_alarm_last5_clean)
         ratio_pred_in_no_true_clean_qf = safe_mean(
-            pred_alarm_patch_clean_qf.astype(float),
+            pred_alarm_last5_clean_qf.astype(float),
             ~true_alarm_patch_clean & input_clean)
 
         lead_times_clean_qf = []
@@ -497,22 +506,22 @@ def main():
             'n_pred_alarm_patches': int(np.sum(pred_alarm_patch)),
             'n_pred_alarm_patches_qf': int(np.sum(pred_alarm_patch_qf)),
             'n_quality_rejected': int(np.sum(pred_alarm_patch & ~pred_quality_ok)),
-            'tp_window': int(np.sum(pred_alarm_patch & true_alarm_last5)),
-            'fp_window': int(np.sum(pred_alarm_patch & ~true_alarm_last5)),
-            'fn_window': int(np.sum(~pred_alarm_patch & true_alarm_last5)),
-            'tn_window': int(np.sum(~pred_alarm_patch & ~true_alarm_last5)),
-            'tp_window_clean': int(np.sum(pred_alarm_patch & true_alarm_last5_clean & input_clean)),
-            'fp_window_clean': int(np.sum(pred_alarm_patch & ~true_alarm_last5_clean & input_clean)),
-            'fn_window_clean': int(np.sum(~pred_alarm_patch & true_alarm_last5_clean & input_clean)),
-            'tn_window_clean': int(np.sum(~pred_alarm_patch & ~true_alarm_last5_clean & input_clean)),
-            'tp_window_qf': int(np.sum(pred_alarm_patch_qf & true_alarm_last5)),
-            'fp_window_qf': int(np.sum(pred_alarm_patch_qf & ~true_alarm_last5)),
-            'fn_window_qf': int(np.sum(~pred_alarm_patch_qf & true_alarm_last5)),
-            'tn_window_qf': int(np.sum(~pred_alarm_patch_qf & ~true_alarm_last5)),
-            'tp_window_clean_qf': int(np.sum(pred_alarm_patch_clean_qf & true_alarm_last5_clean & input_clean)),
-            'fp_window_clean_qf': int(np.sum(pred_alarm_patch_clean_qf & ~true_alarm_last5_clean & input_clean)),
-            'fn_window_clean_qf': int(np.sum(~pred_alarm_patch_clean_qf & true_alarm_last5_clean & input_clean)),
-            'tn_window_clean_qf': int(np.sum(~pred_alarm_patch_clean_qf & ~true_alarm_last5_clean & input_clean)),
+            'tp_window': int(np.sum(pred_alarm_last5 & true_alarm_last5)),
+            'fp_window': int(np.sum(pred_alarm_last5 & ~true_alarm_last5)),
+            'fn_window': int(np.sum(~pred_alarm_last5 & true_alarm_last5)),
+            'tn_window': int(np.sum(~pred_alarm_last5 & ~true_alarm_last5)),
+            'tp_window_clean': int(np.sum(pred_alarm_last5 & true_alarm_last5_clean & input_clean)),
+            'fp_window_clean': int(np.sum(pred_alarm_last5 & ~true_alarm_last5_clean & input_clean)),
+            'fn_window_clean': int(np.sum(~pred_alarm_last5 & true_alarm_last5_clean & input_clean)),
+            'tn_window_clean': int(np.sum(~pred_alarm_last5 & ~true_alarm_last5_clean & input_clean)),
+            'tp_window_qf': int(np.sum(pred_alarm_last5_qf & true_alarm_last5)),
+            'fp_window_qf': int(np.sum(pred_alarm_last5_qf & ~true_alarm_last5)),
+            'fn_window_qf': int(np.sum(~pred_alarm_last5_qf & true_alarm_last5)),
+            'tn_window_qf': int(np.sum(~pred_alarm_last5_qf & ~true_alarm_last5)),
+            'tp_window_clean_qf': int(np.sum(pred_alarm_last5_clean_qf & true_alarm_last5_clean & input_clean)),
+            'fp_window_clean_qf': int(np.sum(pred_alarm_last5_clean_qf & ~true_alarm_last5_clean & input_clean)),
+            'fn_window_clean_qf': int(np.sum(~pred_alarm_last5_clean_qf & true_alarm_last5_clean & input_clean)),
+            'tn_window_clean_qf': int(np.sum(~pred_alarm_last5_clean_qf & ~true_alarm_last5_clean & input_clean)),
             'mse_all_patches': mse_all,
             'rmse_all_patches': rmse_all,
             'mae_all_patches': mae_all,
