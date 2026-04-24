@@ -1,0 +1,51 @@
+# ZJSH 2103 PI10102 transition-process splits for Timer-XL fine-tuning.
+#
+# Read by data_provider.data_loader.MultivariateDatasetYAMLSplit.
+# Paths are resolved relative to run.py --root_path, which should point at
+# /home/aicode/sherwin/dataset/ZJSH/.
+#
+# Target column MUST be the LAST column of every CSV. For these transition
+# files the target PI10102 is already the last column (see export script:
+# dataset/ZJSH/code/preprocessing/export_transitions_to_csv.py).
+#
+# Same YAML serves all three task modes:
+#   * M  (multivariate -> multivariate) — no extra flag
+#   * Co (multivariate -> univariate via covariate mask) — add --covariate
+#   * U  (univariate single-target)    — add --features S
+#
+# Split choice (temporal by transition id): 17 / 3 / 4.
+#   - train gets cluster pairs involving c1..c13
+#   - val / test include later-appearing clusters (c0, c5, c14..c17), which
+#     yields an out-of-sample generalisation check
+
+target: PI10102
+
+train:
+  - 2103ts/PI10102_transition_000_c11_to_c1_len2892.csv
+  - 2103ts/PI10102_transition_001_c1_to_c12_len2231.csv
+  - 2103ts/PI10102_transition_002_c12_to_c3_len1165.csv
+  - 2103ts/PI10102_transition_003_c3_to_c4_len2198.csv
+  - 2103ts/PI10102_transition_004_c4_to_c13_len13007.csv
+  - 2103ts/PI10102_transition_005_c13_to_c4_len2497.csv
+  - 2103ts/PI10102_transition_006_c4_to_c13_len5406.csv
+  - 2103ts/PI10102_transition_007_c13_to_c8_len3702.csv
+  - 2103ts/PI10102_transition_008_c8_to_c10_len1367.csv
+  - 2103ts/PI10102_transition_009_c10_to_c2_len1096.csv
+  - 2103ts/PI10102_transition_010_c2_to_c6_len2606.csv
+  - 2103ts/PI10102_transition_011_c6_to_c10_len3370.csv
+  - 2103ts/PI10102_transition_012_c10_to_c7_len1032.csv
+  - 2103ts/PI10102_transition_013_c7_to_c9_len8699.csv
+  - 2103ts/PI10102_transition_014_c9_to_c7_len4839.csv
+  - 2103ts/PI10102_transition_015_c7_to_c9_len2629.csv
+  - 2103ts/PI10102_transition_016_c9_to_c7_len2322.csv
+
+val:
+  - 2103ts/PI10102_transition_017_c7_to_c0_len5767.csv
+  - 2103ts/PI10102_transition_018_c0_to_c5_len5507.csv
+  - 2103ts/PI10102_transition_019_c5_to_c17_len1172.csv
+
+test:
+  - 2103ts/PI10102_transition_020_c17_to_c5_len904.csv
+  - 2103ts/PI10102_transition_021_c5_to_c16_len3625.csv
+  - 2103ts/PI10102_transition_022_c16_to_c14_len1475.csv
+  - 2103ts/PI10102_transition_023_c14_to_c15_len1134.csv

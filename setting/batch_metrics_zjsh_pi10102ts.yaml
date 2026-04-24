@@ -1,0 +1,34 @@
+# Batch metrics config for ZJSH 2103 PI10102 transition-process models.
+#
+# HH/H/L/LL limits for PI10102 are derived from key_points.json control range
+# (0.13-0.29 MPa) — i.e. 130-290 kPa. Adjust in setting/limits_zjsh.csv if
+# real alarm thresholds are known.
+#
+# NOTE: batch_metrics.py concatenates all 'test' files below and interprets
+# pred.npy / true.npy saved by exp_forecast as sliding-window predictions
+# over that concatenation. Window starts are per-file (never cross a file
+# boundary), matching MultivariateDatasetYAMLSplit's loader behaviour.
+
+params:
+  seq_len: 768
+  pred_len: 96
+  target: "PI10102"
+  limit_csv_path: "/home/aicode/sherwin/TSFM/setting/limits_zjsh.csv"
+  data_root: "/home/aicode/sherwin/dataset/ZJSH"
+  results_root: "./results"
+  split_file: "setting/ZJSH_PI10102ts.yaml"
+  alarm_quality_rmse_factor: 0.01
+  eval_steps: 15
+  input_clean_steps: 30
+
+model_dirs:
+  - name: "Finetuned-S"
+    result_dir: "forecast_ZJSH_PI10102TS_S_full_shot_timer_xl_MultivariateDatasetYAMLSplit_sl768_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+  - name: "Finetuned-MS"
+    result_dir: "forecast_ZJSH_PI10102TS_MS_full_shot_timer_xl_MultivariateDatasetYAMLSplit_sl768_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+
+test:
+  - 2103ts/PI10102_transition_020_c17_to_c5_len904.csv
+  - 2103ts/PI10102_transition_021_c5_to_c16_len3625.csv
+  - 2103ts/PI10102_transition_022_c16_to_c14_len1475.csv
+  - 2103ts/PI10102_transition_023_c14_to_c15_len1134.csv
