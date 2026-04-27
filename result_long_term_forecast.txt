@@ -52,3 +52,9 @@ mse:0.5276101231575012, mae:0.3142646253108978
 zeroshot_PCA101A_Co  
 mse:0.26278582215309143, mae:0.2606618404388428
 
+forecast_ZJSH_PI10102TS_S_full_shot_timer_xl_MultivariateDatasetYAMLSplit_sl768_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0  
+mse:6.112951278686523, mae:1.7584248781204224
+
+forecast_ZJSH_PI10102TS_MS_full_shot_timer_xl_MultivariateDatasetYAMLSplit_sl768_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0  
+mse:7.862114906311035, mae:1.8750567436218262
+
