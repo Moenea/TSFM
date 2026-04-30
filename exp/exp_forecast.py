@@ -16,6 +16,48 @@ from utils.metrics import metric
 warnings.filterwarnings('ignore')
 
 
+# Models ported from MyTimeXer use a 5-arg forward
+# (x_enc, x_mark_enc, x_dec, x_mark_dec, mask) and emit [B, pred_len, c_out].
+BASELINE_MODELS = {
+    'DiPCALSTM', 'STAConvBiLSTM', 'TCNTransformer', 'LSTMGRU', 'CNNLSTM',
+    'TimeXer', 'GTProger', 'GTProgerV13',
+}
+
+
+def _baseline_forward(model, args, batch_x):
+    """Build x_dec from the encoder tail + zeros and call a 5-arg baseline.
+
+    x_mark_* is passed as None — DataEmbedding/DataEmbedding_inverted treat None
+    as "no time features" (positional only). The TSFM data loader emits a dummy
+    [L, 1] mark tensor that does not match the freq's expected feature count, so
+    forwarding it would crash the temporal embedding.
+    """
+    label_len = getattr(args, 'label_len', 0)
+    pred_len = args.output_token_len
+    dec_in = getattr(args, 'dec_in', batch_x.shape[-1])
+
+    if label_len > 0:
+        label_part = batch_x[:, -label_len:, :dec_in]
+    else:
+        label_part = batch_x[:, :0, :dec_in]
+    zeros = torch.zeros(batch_x.shape[0], pred_len, dec_in,
+                        device=batch_x.device, dtype=batch_x.dtype)
+    x_dec = torch.cat([label_part, zeros], dim=1)
+    return model(batch_x, None, x_dec, None, None)
+
+
+def _pad_baseline_outputs(outputs, target_n_vars):
+    """When c_out < target_n_vars (e.g. MS: predicts only the target column),
+    pad with zeros so downstream covariate-slicing and inverse_transform see the
+    expected channel count. The target column is always last in PI10102 CSVs."""
+    if outputs.shape[-1] >= target_n_vars:
+        return outputs
+    pad = torch.zeros(outputs.shape[0], outputs.shape[1],
+                      target_n_vars - outputs.shape[-1],
+                      device=outputs.device, dtype=outputs.dtype)
+    return torch.cat([pad, outputs], dim=-1)
+
+
 class Exp_Forecast(Exp_Basic):
     def __init__(self, args):
         super(Exp_Forecast, self).__init__(args)
@@ -58,8 +100,16 @@ class Exp_Forecast(Exp_Basic):
         return model_optim
 
     def _select_criterion(self):
-        criterion = nn.MSELoss()
-        return criterion
+        if getattr(self.args, 'use_tail_aware_loss', False):
+            from losses.tail_aware_loss import TailAwareMSELoss
+            return TailAwareMSELoss(
+                alpha=self.args.tail_alpha,
+                beta=self.args.tail_beta,
+                mode=self.args.tail_mode,
+                tau_high=self.args.alarm_threshold_high,
+                tau_low=self.args.alarm_threshold_low,
+            )
+        return nn.MSELoss()
 
     def vali(self, vali_data, vali_loader, criterion, is_test=False):
         total_loss = []
@@ -77,7 +127,11 @@ class Exp_Forecast(Exp_Basic):
                 batch_x_mark = batch_x_mark.float().to(self.device)
                 batch_y_mark = batch_y_mark.float().to(self.device)
                 
-                outputs = self.model(batch_x, batch_x_mark, batch_y_mark)
+                if self.args.model in BASELINE_MODELS:
+                    outputs = _baseline_forward(self.model, self.args, batch_x)
+                    outputs = _pad_baseline_outputs(outputs, batch_y.shape[-1])
+                else:
+                    outputs = self.model(batch_x, batch_x_mark, batch_y_mark)
                 if is_test or self.args.nonautoregressive:
                         outputs = outputs[:, -self.args.output_token_len:, :]
                         batch_y = batch_y[:, -self.args.output_token_len:, :].to(self.device)
@@ -152,7 +206,11 @@ class Exp_Forecast(Exp_Basic):
                 batch_x_mark = batch_x_mark.float().to(self.device)
                 batch_y_mark = batch_y_mark.float().to(self.device)
 
-                outputs = self.model(batch_x, batch_x_mark, batch_y_mark)
+                if self.args.model in BASELINE_MODELS:
+                    outputs = _baseline_forward(self.model, self.args, batch_x)
+                    outputs = _pad_baseline_outputs(outputs, batch_y.shape[-1])
+                else:
+                    outputs = self.model(batch_x, batch_x_mark, batch_y_mark)
                 if self.args.dp:
                     torch.cuda.synchronize()
                 if self.args.nonautoregressive:
@@ -239,19 +297,26 @@ class Exp_Forecast(Exp_Basic):
                 batch_x_mark = batch_x_mark.float().to(self.device)
                 batch_y_mark = batch_y_mark.float().to(self.device)
                 
-                inference_steps = self.args.test_pred_len // self.args.output_token_len
-                dis = self.args.test_pred_len - inference_steps * self.args.output_token_len
-                if dis != 0:
-                    inference_steps += 1
-                pred_y = []
-                for j in range(inference_steps):  
-                    if len(pred_y) != 0:
-                        batch_x = torch.cat([batch_x[:, self.args.input_token_len:, :], pred_y[-1]], dim=1)
-                    outputs = self.model(batch_x, batch_x_mark, batch_y_mark)
-                    pred_y.append(outputs[:, -self.args.output_token_len:, :])
-                pred_y = torch.cat(pred_y, dim=1)
-                if dis != 0:
-                    pred_y = pred_y[:, :-self.args.output_token_len+dis, :]
+                if self.args.model in BASELINE_MODELS:
+                    # Baselines emit [B, output_token_len, c_out] in one shot —
+                    # no autoregressive rolling. Requires test_pred_len == output_token_len.
+                    outputs = _baseline_forward(self.model, self.args, batch_x)
+                    outputs = _pad_baseline_outputs(outputs, batch_y.shape[-1])
+                    pred_y = outputs[:, -self.args.output_token_len:, :]
+                else:
+                    inference_steps = self.args.test_pred_len // self.args.output_token_len
+                    dis = self.args.test_pred_len - inference_steps * self.args.output_token_len
+                    if dis != 0:
+                        inference_steps += 1
+                    pred_y = []
+                    for j in range(inference_steps):
+                        if len(pred_y) != 0:
+                            batch_x = torch.cat([batch_x[:, self.args.input_token_len:, :], pred_y[-1]], dim=1)
+                        outputs = self.model(batch_x, batch_x_mark, batch_y_mark)
+                        pred_y.append(outputs[:, -self.args.output_token_len:, :])
+                    pred_y = torch.cat(pred_y, dim=1)
+                    if dis != 0:
+                        pred_y = pred_y[:, :-self.args.output_token_len+dis, :]
                 batch_y = batch_y[:, -self.args.test_pred_len:, :].to(self.device)
                 
                 outputs = pred_y.detach().cpu()

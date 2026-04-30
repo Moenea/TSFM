@@ -54,12 +54,28 @@ def build_window_starts(seq_len, pred_len, file_lengths):
     offsets = np.cumsum([0] + file_lengths)
     total_windows = cum_windows[-1]
     starts = np.zeros(total_windows, dtype=np.int64)
+    file_idx_arr = np.zeros(total_windows, dtype=np.int64)
     for global_i in range(total_windows):
-        file_idx = np.searchsorted(cum_windows[1:], global_i, side='right')
+        file_idx = int(np.searchsorted(cum_windows[1:], global_i, side='right'))
         local_i = global_i - cum_windows[file_idx]
         base = offsets[file_idx]
         starts[global_i] = base + local_i + seq_len
-    return starts
+        file_idx_arr[global_i] = file_idx
+    return starts, file_idx_arr
+
+
+def align_window_mask(window_starts, file_idx_arr, file_lengths,
+                      align_seq_len, align_pred_len):
+    """Boolean mask: keep windows whose start lies in the time slice that
+    a hypothetical model with (align_seq_len, align_pred_len) would also
+    cover, namely [file_off + align_seq_len, file_off + L - align_pred_len].
+    """
+    offsets = np.cumsum([0] + list(file_lengths))
+    file_off = offsets[file_idx_arr]
+    file_len = np.array(file_lengths, dtype=np.int64)[file_idx_arr]
+    lo = file_off + int(align_seq_len)
+    hi = file_off + file_len - int(align_pred_len)
+    return (window_starts >= lo) & (window_starts <= hi)
 
 
 # ---------------------------------------------------------------------------
@@ -194,19 +210,25 @@ def main():
         raise SystemExit('model_dirs must be set in config')
 
     target = params.get('target', '0202B_PCA101A')
-    seq_len = params.get('seq_len')
-    pred_len = params.get('pred_len')
+    default_seq_len = params.get('seq_len')
+    default_pred_len = params.get('pred_len')
     alarm_quality_rmse_factor = params.get('alarm_quality_rmse_factor', None)
     limit_csv_path = params.get('limit_csv_path', '')
     results_root = Path(params.get('results_root', './results'))
 
     eval_steps = params.get('eval_steps', None)
-    input_clean_steps = params.get('input_clean_steps', seq_len)
+    input_clean_steps = params.get('input_clean_steps', default_seq_len)
+
+    # Optional alignment: post-filter every model's windows down to the time
+    # slice a hypothetical model with (align.seq_len, align.pred_len) would
+    # cover. Used to make short-window baselines comparable to long-context
+    # models like Timer-XL.
+    align_cfg = params.get('align_eval_to', None) or {}
+    align_seq_len = align_cfg.get('seq_len') if align_cfg else None
+    align_pred_len = align_cfg.get('pred_len') if align_cfg else None
 
     if not limit_csv_path:
         raise SystemExit('limit_csv_path must be set')
-    if seq_len is None or pred_len is None:
-        raise SystemExit('seq_len and pred_len must be set')
 
     df_limit = pd.read_csv(limit_csv_path, index_col=0)
     if target not in df_limit.index:
@@ -232,7 +254,10 @@ def main():
     true_series = np.concatenate(true_series, axis=0)
 
     print(f'target={target}  high={high}  low={low}  alarm_band={alarm_band}')
-    print(f'test series length={len(true_series)}  seq_len={seq_len}  pred_len={pred_len}')
+    print(f'test series length={len(true_series)}  '
+          f'default_seq_len={default_seq_len}  default_pred_len={default_pred_len}'
+          + (f'  align_eval_to=({align_seq_len},{align_pred_len})'
+             if align_seq_len is not None else ''))
 
     metrics_all_C = {}
 
@@ -245,6 +270,14 @@ def main():
             print(f'missing pred/true for {model_name}: {result_dir}')
             continue
 
+        # Per-model seq_len / pred_len overrides (fall back to params defaults)
+        seq_len = entry.get('seq_len', default_seq_len)
+        pred_len = entry.get('pred_len', default_pred_len)
+        if seq_len is None or pred_len is None:
+            raise SystemExit(
+                f'seq_len/pred_len missing for {model_name} '
+                '(set in params or in the model_dirs entry)')
+
         pred = np.load(pred_path)
         true = np.load(true_path)
 
@@ -255,6 +288,28 @@ def main():
         else:
             pred_t = pred
             true_t = true
+
+        # Window starts in global time index space (pre-alignment filter)
+        window_starts_full, file_idx_full = build_window_starts(
+            seq_len, pred_len, file_lengths)
+
+        # Apply optional alignment filter: keep only windows whose start lies
+        # in [file_off + align_seq_len, file_off + L - align_pred_len].
+        if align_seq_len is not None and align_pred_len is not None:
+            keep = align_window_mask(
+                window_starts_full, file_idx_full, file_lengths,
+                align_seq_len, align_pred_len)
+            if pred_t.shape[0] != window_starts_full.shape[0]:
+                raise SystemExit(
+                    f'window count mismatch for {model_name}: '
+                    f'pred has {pred_t.shape[0]} rows but expected '
+                    f'{window_starts_full.shape[0]} from seq_len={seq_len}, '
+                    f'pred_len={pred_len}')
+            pred_t = pred_t[keep]
+            true_t = true_t[keep]
+            window_starts = window_starts_full[keep]
+        else:
+            window_starts = window_starts_full
 
         # Truncate to first eval_steps per window if configured
         if eval_steps is not None and eval_steps < pred_t.shape[1]:
@@ -337,7 +392,7 @@ def main():
             pred_alarm_last5.astype(float), ~true_alarm_patch)
 
         # --- Event-level lead time ---
-        window_starts = build_window_starts(seq_len, pred_len, file_lengths)
+        # window_starts already built (with optional alignment filter applied)
         true_alarm_series = (true_series > high) | (true_series < low)
         true_events = contiguous_events(true_alarm_series)
 

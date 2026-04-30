@@ -10,7 +10,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Timer-XL')
 
     # basic config
-    parser.add_argument('--task_name', type=str, required=True, default='forecast', help='task name, options:[forecast]')
+    parser.add_argument('--task_name', type=str, required=True, default='forecast', help='task name, options:[forecast, long_term_forecast]')
     parser.add_argument('--is_training', type=int, required=True, default=1, help='status')
     parser.add_argument('--model_id', type=str, required=True, default='test', help='model id')
     parser.add_argument('--model', type=str, required=True, default='timer_xl', help='model name, options: [timer_xl, timer, moirai, moment]')
@@ -50,6 +50,25 @@ if __name__ == '__main__':
     parser.add_argument('--output_attention', action='store_true', help='output attention', default=False)
     parser.add_argument('--visualize', action='store_true', help='visualize', default=False)
     parser.add_argument('--flash_attention', action='store_true', help='flash attention', default=False)
+
+    # MyTimeXer baseline-compatible args (DiPCALSTM/STAConvBiLSTM/TCNTransformer/LSTMGRU/CNNLSTM/TimeXer/GTProger/GTProgerV13)
+    parser.add_argument('--enc_in', type=int, default=16, help='encoder input channels (baseline models)')
+    parser.add_argument('--dec_in', type=int, default=16, help='decoder input channels (baseline models)')
+    parser.add_argument('--c_out', type=int, default=1, help='output channels (baseline models)')
+    parser.add_argument('--label_len', type=int, default=15, help='start-token length for decoder input (baseline models)')
+    parser.add_argument('--pred_len', type=int, default=15, help='prediction length surfaced as configs.pred_len (baseline models). Defaults to output_token_len when unset by script.')
+    parser.add_argument('--patch_len', type=int, default=10, help='patch length for TimeXer/GTProger family')
+    parser.add_argument('--d_layers', type=int, default=1, help='decoder layers (TCNTransformer)')
+    parser.add_argument('--embed', type=str, default='timeF', help='time features encoding, options:[timeF, fixed, learned]')
+    parser.add_argument('--freq', type=str, default='t', help='freq for time features encoding')
+
+    # Tail-aware MSE loss (TCNTransformer/GTProger ports the MyTimeXer alarm-aware training)
+    parser.add_argument('--use_tail_aware_loss', action='store_true', default=False, help='use TailAwareMSELoss instead of MSE')
+    parser.add_argument('--tail_alpha', type=float, default=2.0, help='tail-aware: max extra weight (1+alpha cap)')
+    parser.add_argument('--tail_beta', type=float, default=0.003, help='tail-aware: transition steepness (1/beta)')
+    parser.add_argument('--tail_mode', type=str, default='two_sided', help='tail-aware: high|low|two_sided')
+    parser.add_argument('--alarm_threshold_high', type=float, default=0.98)
+    parser.add_argument('--alarm_threshold_low', type=float, default=0.85)
 
     # adaptation
     parser.add_argument('--adaptation', action='store_true', help='adaptation', default=False)
@@ -110,6 +129,11 @@ if __name__ == '__main__':
     np.random.seed(fix_seed)
 
     args.node_list = [int(x) for x in args.node_list.split(',')]
+
+    # Baseline models read configs.pred_len directly; align it with output_token_len
+    # unless the script overrode --pred_len explicitly.
+    if args.pred_len == 15 and args.output_token_len != 15:
+        args.pred_len = args.output_token_len
     
     if args.dp:
         args.devices = args.devices.replace(' ', '')

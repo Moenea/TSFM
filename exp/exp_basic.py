@@ -1,4 +1,6 @@
 from models import timer, timer_xl, moirai, moment, gpt4ts, ttm, time_llm, autotimes
+from models import (DiPCALSTM, STAConvBiLSTM, TCNTransformer, LSTMGRU, CNNLSTM,
+                    TimeXer, GTProger, GTProgerV13)
 
 
 class Exp_Basic(object):
@@ -13,6 +15,15 @@ class Exp_Basic(object):
             "ttm": ttm,
             "time_llm": time_llm,
             "autotimes": autotimes,
+            # MyTimeXer baselines (5-arg forward dispatched from Exp_Forecast)
+            "DiPCALSTM": DiPCALSTM,
+            "STAConvBiLSTM": STAConvBiLSTM,
+            "TCNTransformer": TCNTransformer,
+            "LSTMGRU": LSTMGRU,
+            "CNNLSTM": CNNLSTM,
+            "TimeXer": TimeXer,
+            "GTProger": GTProger,
+            "GTProgerV13": GTProgerV13,
         }
         self.model = self._build_model()
 
