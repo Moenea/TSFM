@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Compute window-level (Category C) metrics for ALL ZJSH 2103 PI10102
-# transition models in a single run: 2 Timer-XL fine-tunes (S / MS) and 13
-# MyTimeXer-style baselines (CNNLSTM / DiPCALSTM / LSTMGRU / STAConvBiLSTM /
-# TCNTransformer / TimeXer / GTProger / GTProgerV13).
+# transition models in a single run: 6 Timer-XL variants (zero-shot S/MS,
+# full-shot S/MS, partial15 S/MS) and 13 MyTimeXer-style baselines
+# (CNNLSTM / DiPCALSTM / LSTMGRU / STAConvBiLSTM / TCNTransformer / TimeXer /
+# GTProger / GTProgerV13).
 #
 # The shared YAML gives each model its own seq_len / pred_len, then
 # `align_eval_to: {seq_len: 768, pred_len: 96}` filters every model's windows

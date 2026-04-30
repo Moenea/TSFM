@@ -1,9 +1,10 @@
 # Batch metrics config for ZJSH 2103 PI10102 transition-process models.
 #
-# Covers BOTH the Timer-XL fine-tunes (S / MS) and the 13 MyTimeXer-style
-# baselines (CNNLSTM/DiPCALSTM/LSTMGRU/STAConvBiLSTM/TCNTransformer/TimeXer/
-# GTProger/GTProgerV13). Each model uses its own seq_len/pred_len in
-# build_window_starts so pred.npy is decoded against the correct windowing.
+# Covers 6 Timer-XL variants (zero-shot S/MS, full-shot S/MS, partial15 S/MS)
+# and the 13 MyTimeXer-style baselines (CNNLSTM/DiPCALSTM/LSTMGRU/
+# STAConvBiLSTM/TCNTransformer/TimeXer/GTProger/GTProgerV13). Each model uses
+# its own seq_len/pred_len in build_window_starts so pred.npy is decoded
+# against the correct windowing.
 #
 # `align_eval_to` filters every model's windows to the same time slice that a
 # Timer-XL window (seq_len=768, pred_len=96) would cover, namely
@@ -31,7 +32,15 @@ params:
 
 # Each entry may override seq_len/pred_len. Timer-XL: 768/96. Baselines: 30/15.
 model_dirs:
-  # ----- Timer-XL (long-context fine-tunes) -----
+  # ----- Timer-XL (long-context, zero-shot / full-shot / partial15) -----
+  - name: "Timer-XL-Zeroshot-S"
+    seq_len: 768
+    pred_len: 96
+    result_dir: "zeroshot_ZJSH_PI10102TS_S"
+  - name: "Timer-XL-Zeroshot-MS"
+    seq_len: 768
+    pred_len: 96
+    result_dir: "zeroshot_ZJSH_PI10102TS_MS"
   - name: "Timer-XL-S"
     seq_len: 768
     pred_len: 96
@@ -40,6 +49,14 @@ model_dirs:
     seq_len: 768
     pred_len: 96
     result_dir: "forecast_ZJSH_PI10102TS_MS_full_shot_timer_xl_MultivariateDatasetYAMLSplit_sl768_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+  - name: "Timer-XL-Partial15-S"
+    seq_len: 768
+    pred_len: 96
+    result_dir: "forecast_ZJSH_PI10102TS_S_partial15_timer_xl_MultivariateDatasetYAMLSplit_sl768_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+  - name: "Timer-XL-Partial15-MS"
+    seq_len: 768
+    pred_len: 96
+    result_dir: "forecast_ZJSH_PI10102TS_MS_partial15_timer_xl_MultivariateDatasetYAMLSplit_sl768_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
 
   # ----- Baselines (seq_len=30 / pred_len=15) -----
   - name: "CNNLSTM-S"
@@ -50,14 +67,14 @@ model_dirs:
     seq_len: 30
     pred_len: 15
     result_dir: "long_term_forecast_ZJSH_PI10102TS_CNNLSTM_MS_CNNLSTM_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el2_dm230_dff1408_nh8_cosFalse_CNNLSTM-MS_0"
-  - name: "DiPCALSTM-S"
-    seq_len: 30
-    pred_len: 15
-    result_dir: "long_term_forecast_ZJSH_PI10102TS_DiPCALSTM_S_DiPCALSTM_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el2_dm472_dff2048_nh8_cosFalse_DiPCALSTM-S_0"
-  - name: "DiPCALSTM-MS"
-    seq_len: 30
-    pred_len: 15
-    result_dir: "long_term_forecast_ZJSH_PI10102TS_DiPCALSTM_MS_DiPCALSTM_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el2_dm472_dff2048_nh8_cosFalse_DiPCALSTM-MS_0"
+  # - name: "DiPCALSTM-S"
+  #   seq_len: 30
+  #   pred_len: 15
+  #   result_dir: "long_term_forecast_ZJSH_PI10102TS_DiPCALSTM_S_DiPCALSTM_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el2_dm472_dff2048_nh8_cosFalse_DiPCALSTM-S_0"
+  # - name: "DiPCALSTM-MS"
+  #   seq_len: 30
+  #   pred_len: 15
+  #   result_dir: "long_term_forecast_ZJSH_PI10102TS_DiPCALSTM_MS_DiPCALSTM_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el2_dm472_dff2048_nh8_cosFalse_DiPCALSTM-MS_0"
   - name: "LSTMGRU-S"
     seq_len: 30
     pred_len: 15

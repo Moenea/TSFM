@@ -181,3 +181,15 @@ mse:0.9380923509597778, mae:0.6836891174316406
 long_term_forecast_ZJSH_PI10102TS_GTProgerV13_MS_GTProgerV13_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm248_dff992_nh8_cosFalse_GTProgerV13-MS_0  
 mse:0.9837218523025513, mae:0.7141115069389343
 
+zeroshot_ZJSH_PI10102TS_S  
+mse:7.181650638580322, mae:1.8359408378601074
+
+zeroshot_ZJSH_PI10102TS_MS  
+mse:8.561809539794922, mae:2.068452835083008
+
+forecast_ZJSH_PI10102TS_S_partial15_timer_xl_MultivariateDatasetYAMLSplit_sl768_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0  
+mse:8.307967185974121, mae:1.9731521606445312
+
+forecast_ZJSH_PI10102TS_MS_partial15_timer_xl_MultivariateDatasetYAMLSplit_sl768_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0  
+mse:6.773428916931152, mae:1.7912025451660156
+
