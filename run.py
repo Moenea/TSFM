@@ -159,10 +159,7 @@ if __name__ == '__main__':
                                 rank=rank)
         torch.cuda.set_device(local_rank)
     
-    if args.task_name == 'forecast':
-        Exp = Exp_Forecast
-    else:
-        Exp = Exp_Forecast
+    Exp = Exp_Forecast
 
     if args.is_training:
         for ii in range(args.itr):

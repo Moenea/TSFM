@@ -133,8 +133,8 @@ class Exp_Forecast(Exp_Basic):
                 else:
                     outputs = self.model(batch_x, batch_x_mark, batch_y_mark)
                 if is_test or self.args.nonautoregressive:
-                        outputs = outputs[:, -self.args.output_token_len:, :]
-                        batch_y = batch_y[:, -self.args.output_token_len:, :].to(self.device)
+                    outputs = outputs[:, -self.args.output_token_len:, :]
+                    batch_y = batch_y[:, -self.args.output_token_len:, :].to(self.device)
                 else:
                     outputs = outputs[:, :, :]
                     batch_y = batch_y[:, :, :].to(self.device)

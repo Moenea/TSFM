@@ -103,7 +103,7 @@ for cfg in "${configs[@]}"; do
       --train_epochs $TRAIN_EPOCHS --patience $PATIENCE --gpu 0 --use_norm \
       $TAIL_FLAGS \
       $RESTORE_DIFF_FLAGS \
-  --des "$DES" \
+      --des "$DES" \
       --test_dir "$SETTING" --test_file_name checkpoint.pth \
       || echo "[FAIL] $MODEL $MODE"
   done
