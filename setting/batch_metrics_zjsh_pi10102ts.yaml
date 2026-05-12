@@ -1,9 +1,9 @@
 # Batch metrics config for ZJSH 2103 PI10102 transition-process models.
 #
-# Covers 6 Timer-XL variants (zero-shot S/MS, full-shot S/MS, partial15 S/MS)
-# and the 13 MyTimeXer-style baselines (CNNLSTM/DiPCALSTM/LSTMGRU/
-# STAConvBiLSTM/TCNTransformer/TimeXer/GTProger/GTProgerV13). Each model uses
-# its own seq_len/pred_len in build_window_starts so pred.npy is decoded
+# Covers raw-signal models plus DIFF-restored variants. The DIFF models are
+# trained on first differences, but their pred.npy / true.npy are reconstructed
+# to raw PI10102 absolute values before this config evaluates them. Each model
+# uses its own seq_len/pred_len in build_window_starts so pred.npy is decoded
 # against the correct windowing.
 #
 # `align_eval_to` filters every model's windows to the same time slice that a
@@ -75,30 +75,30 @@ model_dirs:
   #   seq_len: 30
   #   pred_len: 15
   #   result_dir: "long_term_forecast_ZJSH_PI10102TS_DiPCALSTM_MS_DiPCALSTM_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el2_dm472_dff2048_nh8_cosFalse_DiPCALSTM-MS_0"
-  - name: "LSTMGRU-S"
-    seq_len: 30
-    pred_len: 15
-    result_dir: "long_term_forecast_ZJSH_PI10102TS_LSTMGRU_S_LSTMGRU_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm316_dff2048_nh8_cosFalse_LSTMGRU-S_0"
-  - name: "LSTMGRU-MS"
-    seq_len: 30
-    pred_len: 15
-    result_dir: "long_term_forecast_ZJSH_PI10102TS_LSTMGRU_MS_LSTMGRU_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm316_dff2048_nh8_cosFalse_LSTMGRU-MS_0"
-  - name: "STAConvBiLSTM-S"
-    seq_len: 30
-    pred_len: 15
-    result_dir: "long_term_forecast_ZJSH_PI10102TS_STAConvBiLSTM_S_STAConvBiLSTM_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm268_dff2048_nh8_cosFalse_STAConvBiLSTM-S_0"
-  - name: "STAConvBiLSTM-MS"
-    seq_len: 30
-    pred_len: 15
-    result_dir: "long_term_forecast_ZJSH_PI10102TS_STAConvBiLSTM_MS_STAConvBiLSTM_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm268_dff2048_nh8_cosFalse_STAConvBiLSTM-MS_0"
-  - name: "TCNTransformer-S"
-    seq_len: 30
-    pred_len: 15
-    result_dir: "long_term_forecast_ZJSH_PI10102TS_TCNTransformer_S_TCNTransformer_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el2_dm128_dff512_nh8_cosFalse_TCNTransformer-S_0"
-  - name: "TCNTransformer-MS"
-    seq_len: 30
-    pred_len: 15
-    result_dir: "long_term_forecast_ZJSH_PI10102TS_TCNTransformer_MS_TCNTransformer_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el2_dm128_dff512_nh8_cosFalse_TCNTransformer-MS_0"
+  # - name: "LSTMGRU-S"
+  #   seq_len: 30
+  #   pred_len: 15
+  #   result_dir: "long_term_forecast_ZJSH_PI10102TS_LSTMGRU_S_LSTMGRU_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm316_dff2048_nh8_cosFalse_LSTMGRU-S_0"
+  # - name: "LSTMGRU-MS"
+  #   seq_len: 30
+  #   pred_len: 15
+  #   result_dir: "long_term_forecast_ZJSH_PI10102TS_LSTMGRU_MS_LSTMGRU_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm316_dff2048_nh8_cosFalse_LSTMGRU-MS_0"
+  # - name: "STAConvBiLSTM-S"
+  #   seq_len: 30
+  #   pred_len: 15
+  #   result_dir: "long_term_forecast_ZJSH_PI10102TS_STAConvBiLSTM_S_STAConvBiLSTM_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm268_dff2048_nh8_cosFalse_STAConvBiLSTM-S_0"
+  # - name: "STAConvBiLSTM-MS"
+  #   seq_len: 30
+  #   pred_len: 15
+  #   result_dir: "long_term_forecast_ZJSH_PI10102TS_STAConvBiLSTM_MS_STAConvBiLSTM_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm268_dff2048_nh8_cosFalse_STAConvBiLSTM-MS_0"
+  # - name: "TCNTransformer-S"
+  #   seq_len: 30
+  #   pred_len: 15
+  #   result_dir: "long_term_forecast_ZJSH_PI10102TS_TCNTransformer_S_TCNTransformer_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el2_dm128_dff512_nh8_cosFalse_TCNTransformer-S_0"
+  # - name: "TCNTransformer-MS"
+  #   seq_len: 30
+  #   pred_len: 15
+  #   result_dir: "long_term_forecast_ZJSH_PI10102TS_TCNTransformer_MS_TCNTransformer_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el2_dm128_dff512_nh8_cosFalse_TCNTransformer-MS_0"
   - name: "TimeXer-MS"
     seq_len: 30
     pred_len: 15
@@ -111,6 +111,92 @@ model_dirs:
     seq_len: 30
     pred_len: 15
     result_dir: "long_term_forecast_ZJSH_PI10102TS_GTProgerV13_MS_GTProgerV13_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm248_dff992_nh8_cosFalse_GTProgerV13-MS_0"
+
+
+  # ----- DIFF-restored models (trained on differences, evaluated after raw-scale reconstruction) -----
+  - name: "Timer-XL-Zeroshot-S-DIFF"
+    seq_len: 768
+    pred_len: 96
+    result_dir: "zeroshot_ZJSH_PI10102TS_S_DIFF"
+  - name: "Timer-XL-Zeroshot-MS-DIFF"
+    seq_len: 768
+    pred_len: 96
+    result_dir: "zeroshot_ZJSH_PI10102TS_MS_DIFF"
+  - name: "Timer-XL-S-DIFF"
+    seq_len: 768
+    pred_len: 96
+    result_dir: "forecast_ZJSH_PI10102TS_S_full_shot_DIFF_timer_xl_MultivariateDatasetYAMLSplit_sl768_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+  - name: "Timer-XL-MS-DIFF"
+    seq_len: 768
+    pred_len: 96
+    result_dir: "forecast_ZJSH_PI10102TS_MS_full_shot_DIFF_timer_xl_MultivariateDatasetYAMLSplit_sl768_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+  - name: "Timer-XL-Partial15-S-DIFF"
+    seq_len: 768
+    pred_len: 96
+    result_dir: "forecast_ZJSH_PI10102TS_S_partial15_DIFF_timer_xl_MultivariateDatasetYAMLSplit_sl768_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+  - name: "Timer-XL-Partial15-MS-DIFF"
+    seq_len: 768
+    pred_len: 96
+    result_dir: "forecast_ZJSH_PI10102TS_MS_partial15_DIFF_timer_xl_MultivariateDatasetYAMLSplit_sl768_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+  - name: "CNNLSTM-S-DIFF"
+    seq_len: 30
+    pred_len: 15
+    result_dir: "long_term_forecast_ZJSH_PI10102TS_CNNLSTM_S_DIFF_CNNLSTM_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el2_dm230_dff1408_nh8_cosFalse_CNNLSTM-S-DIFF_0"
+  - name: "CNNLSTM-MS-DIFF"
+    seq_len: 30
+    pred_len: 15
+    result_dir: "long_term_forecast_ZJSH_PI10102TS_CNNLSTM_MS_DIFF_CNNLSTM_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el2_dm230_dff1408_nh8_cosFalse_CNNLSTM-MS-DIFF_0"
+  - name: "LSTMGRU-S-DIFF"
+    seq_len: 30
+    pred_len: 15
+    result_dir: "long_term_forecast_ZJSH_PI10102TS_LSTMGRU_S_DIFF_LSTMGRU_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm316_dff2048_nh8_cosFalse_LSTMGRU-S-DIFF_0"
+  - name: "LSTMGRU-MS-DIFF"
+    seq_len: 30
+    pred_len: 15
+    result_dir: "long_term_forecast_ZJSH_PI10102TS_LSTMGRU_MS_DIFF_LSTMGRU_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm316_dff2048_nh8_cosFalse_LSTMGRU-MS-DIFF_0"
+  - name: "STAConvBiLSTM-S-DIFF"
+    seq_len: 30
+    pred_len: 15
+    result_dir: "long_term_forecast_ZJSH_PI10102TS_STAConvBiLSTM_S_DIFF_STAConvBiLSTM_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm268_dff2048_nh8_cosFalse_STAConvBiLSTM-S-DIFF_0"
+  - name: "STAConvBiLSTM-MS-DIFF"
+    seq_len: 30
+    pred_len: 15
+    result_dir: "long_term_forecast_ZJSH_PI10102TS_STAConvBiLSTM_MS_DIFF_STAConvBiLSTM_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm268_dff2048_nh8_cosFalse_STAConvBiLSTM-MS-DIFF_0"
+  - name: "TCNTransformer-S-DIFF"
+    seq_len: 30
+    pred_len: 15
+    result_dir: "long_term_forecast_ZJSH_PI10102TS_TCNTransformer_S_DIFF_TCNTransformer_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el2_dm128_dff512_nh8_cosFalse_TCNTransformer-S-DIFF_0"
+  - name: "TCNTransformer-MS-DIFF"
+    seq_len: 30
+    pred_len: 15
+    result_dir: "long_term_forecast_ZJSH_PI10102TS_TCNTransformer_MS_DIFF_TCNTransformer_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el2_dm128_dff512_nh8_cosFalse_TCNTransformer-MS-DIFF_0"
+  - name: "TimeXer-MS-DIFF"
+    seq_len: 30
+    pred_len: 15
+    result_dir: "long_term_forecast_ZJSH_PI10102TS_TimeXer_MS_DIFF_TimeXer_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm248_dff992_nh8_cosFalse_TimeXer-MS-DIFF_0"
+  - name: "GTProger-MS-DIFF"
+    seq_len: 30
+    pred_len: 15
+    result_dir: "long_term_forecast_ZJSH_PI10102TS_GTProger_MS_DIFF_GTProger_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm248_dff992_nh8_cosFalse_GTProger-MS-DIFF_0"
+  - name: "GTProgerV13-MS-DIFF"
+    seq_len: 30
+    pred_len: 15
+    result_dir: "long_term_forecast_ZJSH_PI10102TS_GTProgerV13_MS_DIFF_GTProgerV13_MultivariateDatasetYAMLSplit_sl30_it15_ot15_lr0.001_bt128_wd0_el1_dm248_dff992_nh8_cosFalse_GTProgerV13-MS-DIFF_0"
+
+
+  # ----- Timer-XL DIFF patch-count ablation (restored to ABS) -----
+  - name: "Timer-XL-MS-DIFF-p1"
+    seq_len: 96
+    pred_len: 96
+    result_dir: "forecast_ZJSH_PI10102TS_MS_full_shot_DIFF_p1_timer_xl_MultivariateDatasetYAMLSplit_sl96_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+  - name: "Timer-XL-MS-DIFF-p3"
+    seq_len: 288
+    pred_len: 96
+    result_dir: "forecast_ZJSH_PI10102TS_MS_full_shot_DIFF_p3_timer_xl_MultivariateDatasetYAMLSplit_sl288_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+  - name: "Timer-XL-MS-DIFF-p5"
+    seq_len: 480
+    pred_len: 96
+    result_dir: "forecast_ZJSH_PI10102TS_MS_full_shot_DIFF_p5_timer_xl_MultivariateDatasetYAMLSplit_sl480_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
 
 test:
   - 2103ts/PI10102_transition_020_c17_to_c5_len904.csv

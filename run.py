@@ -47,6 +47,12 @@ if __name__ == '__main__':
     parser.add_argument('--nonautoregressive', action='store_true', help='nonautoregressive', default=False)
     parser.add_argument('--test_dir', type=str, default='./test', help='test dir')
     parser.add_argument('--test_file_name', type=str, default='checkpoint.pth', help='test file')
+    parser.add_argument('--restore_diff_to_raw', action='store_true', default=False,
+                        help='save differenced outputs as pred_diff/true_diff and replace pred/true with raw-scale reconstruction')
+    parser.add_argument('--raw_split_file', type=str, default=None,
+                        help='raw-signal YAML split used to reconstruct differenced forecasts')
+    parser.add_argument('--restore_target', type=str, default=None,
+                        help='target column used when restoring differenced forecasts to raw scale')
     parser.add_argument('--output_attention', action='store_true', help='output attention', default=False)
     parser.add_argument('--visualize', action='store_true', help='visualize', default=False)
     parser.add_argument('--flash_attention', action='store_true', help='flash attention', default=False)

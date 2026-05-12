@@ -355,6 +355,23 @@ class Exp_Forecast(Exp_Basic):
         if self.args.covariate:
             preds = preds[:, :, -1]
             trues = trues[:, :, -1]
+
+        pred_diff = None
+        true_diff = None
+        if getattr(self.args, 'restore_diff_to_raw', False):
+            if not getattr(self.args, 'raw_split_file', None):
+                raise ValueError('--restore_diff_to_raw requires --raw_split_file')
+            from utils.diff_restore import restore_diff_to_raw
+            pred_diff = preds.copy()
+            true_diff = trues.copy()
+            preds, trues = restore_diff_to_raw(
+                pred_diff,
+                true_diff,
+                root_path=self.args.root_path,
+                raw_split_file=self.args.raw_split_file,
+                target=getattr(self.args, 'restore_target', None) or getattr(self.args, 'target', None),
+                seq_len=self.args.test_seq_len,
+            )
         mae, mse, rmse, mape, mspe, smape = metric(preds, trues)
         print('mse:{}, mae:{}'.format(mse, mae))
         f = open("result_long_term_forecast.txt", 'a')
@@ -369,6 +386,9 @@ class Exp_Forecast(Exp_Basic):
         if not os.path.exists(result_path):
             os.makedirs(result_path)
         np.save(result_path + 'metrics.npy', np.array([mae, mse, rmse, mape, mspe]))
+        if pred_diff is not None and true_diff is not None:
+            np.save(result_path + 'pred_diff.npy', pred_diff)
+            np.save(result_path + 'true_diff.npy', true_diff)
         np.save(result_path + 'pred.npy', preds)
         np.save(result_path + 'true.npy', trues)
         print(f'Results saved to {result_path}')

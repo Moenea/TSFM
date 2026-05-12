@@ -597,6 +597,7 @@ def main():
     fig_dir.mkdir(parents=True, exist_ok=True)
 
     plot_keys_c = [
+        'mse_all_patches',
         'mse_true_alarm_patch', 'mse_no_true_alarm_patch',
         'mse_pred_alarm_patch', 'mse_no_pred_alarm_patch',
         'ratio_pred_in_true_alarm_patches', 'ratio_pred_in_no_true_alarm_patches',
@@ -631,6 +632,7 @@ def main():
         'ratio_pred_in_true_alarm_patches_clean_qf', 'ratio_pred_in_no_true_alarm_patches_clean_qf',
         'mean_lead_time_patch_clean_qf', 'mean_prognosis_error_clean_qf',
         'n_pred_alarm_patches', 'n_pred_alarm_patches_qf', 'n_quality_rejected',
+        'mse_all_patches',
         'rmse_true_alarm_patch', 'rmse_no_true_alarm_patch',
         'rmse_pred_alarm_patch', 'rmse_no_pred_alarm_patch', 'rmse_all_patches',
         'mae_true_alarm_patch', 'mae_no_true_alarm_patch',
