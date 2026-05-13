@@ -37,10 +37,10 @@ model_dirs:
   #   seq_len: 768
   #   pred_len: 96
   #   result_dir: "zeroshot_ZJSH_PI10102TS_S"
-  - name: "Timer-XL-Zeroshot-MS"
-    seq_len: 768
-    pred_len: 96
-    result_dir: "zeroshot_ZJSH_PI10102TS_MS"
+  # - name: "Timer-XL-Zeroshot-MS"
+  #   seq_len: 768
+  #   pred_len: 96
+  #   result_dir: "zeroshot_ZJSH_PI10102TS_MS"
   # - name: "Timer-XL-S"
   #   seq_len: 768
   #   pred_len: 96
@@ -118,10 +118,10 @@ model_dirs:
   #   seq_len: 768
   #   pred_len: 96
   #   result_dir: "zeroshot_ZJSH_PI10102TS_S_DIFF"
-  - name: "Timer-XL-Zeroshot-MS-DIFF"
-    seq_len: 768
-    pred_len: 96
-    result_dir: "zeroshot_ZJSH_PI10102TS_MS_DIFF"
+  # - name: "Timer-XL-Zeroshot-MS-DIFF"
+  #   seq_len: 768
+  #   pred_len: 96
+  #   result_dir: "zeroshot_ZJSH_PI10102TS_MS_DIFF"
   # - name: "Timer-XL-S-DIFF"
   #   seq_len: 768
   #   pred_len: 96

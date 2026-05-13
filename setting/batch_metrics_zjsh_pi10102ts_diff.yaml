@@ -48,6 +48,34 @@ model_dirs:
     pred_len: 96
     result_dir: "forecast_ZJSH_PI10102TS_MS_partial15_DIFF_timer_xl_MultivariateDatasetYAMLSplit_sl768_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
 
+  # ----- Timer-XL DIFF patch-count ablation, full loss (p1 / p3 / p5) -----
+  - name: "Timer-XL-MS-DIFF-p1"
+    seq_len: 96
+    pred_len: 96
+    result_dir: "forecast_ZJSH_PI10102TS_MS_full_shot_DIFF_p1_timer_xl_MultivariateDatasetYAMLSplit_sl96_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+  - name: "Timer-XL-MS-DIFF-p3"
+    seq_len: 288
+    pred_len: 96
+    result_dir: "forecast_ZJSH_PI10102TS_MS_full_shot_DIFF_p3_timer_xl_MultivariateDatasetYAMLSplit_sl288_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+  - name: "Timer-XL-MS-DIFF-p5"
+    seq_len: 480
+    pred_len: 96
+    result_dir: "forecast_ZJSH_PI10102TS_MS_full_shot_DIFF_p5_timer_xl_MultivariateDatasetYAMLSplit_sl480_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+
+  # ----- Timer-XL DIFF + partial15 patch-count ablation (loss on first 15 steps) -----
+  - name: "Timer-XL-MS-DIFF-Partial15-p1"
+    seq_len: 96
+    pred_len: 96
+    result_dir: "forecast_ZJSH_PI10102TS_MS_partial15_DIFF_p1_timer_xl_MultivariateDatasetYAMLSplit_sl96_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+  - name: "Timer-XL-MS-DIFF-Partial15-p3"
+    seq_len: 288
+    pred_len: 96
+    result_dir: "forecast_ZJSH_PI10102TS_MS_partial15_DIFF_p3_timer_xl_MultivariateDatasetYAMLSplit_sl288_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+  - name: "Timer-XL-MS-DIFF-Partial15-p5"
+    seq_len: 480
+    pred_len: 96
+    result_dir: "forecast_ZJSH_PI10102TS_MS_partial15_DIFF_p5_timer_xl_MultivariateDatasetYAMLSplit_sl480_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
+
   # ----- Baselines (seq_len=30 / pred_len=15) -----
   - name: "CNNLSTM-S"
     seq_len: 30
