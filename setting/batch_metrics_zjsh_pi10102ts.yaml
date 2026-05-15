@@ -212,6 +212,23 @@ model_dirs:
     pred_len: 96
     result_dir: "forecast_ZJSH_PI10102TS_MS_partial15_DIFF_p5_timer_xl_MultivariateDatasetYAMLSplit_sl480_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0"
 
+  # ----- Gate-ensemble fusion of DIFF-to-ABS Timer-XL (A) and raw Timer-XL (B) -----
+  # Produced by scripts/adaptation/full_shot/PI10102/ensemble/fuse_*.sh.
+  # pred/true are aligned to seq_len=768/pred_len=96 (same windowing as the two
+  # Timer-XL sources), so batch_metrics applies its standard align_eval_to mask.
+  - name: "Gate-T1-TXL-MS"
+    seq_len: 768
+    pred_len: 96
+    result_dir: "ensemble_Gate-T1-TXL-MS_test_0"
+  - name: "Gate-T2-TXL-MS"
+    seq_len: 768
+    pred_len: 96
+    result_dir: "ensemble_Gate-T2-TXL-MS_test_0"
+  - name: "Gate-T3-TXL-MS"
+    seq_len: 768
+    pred_len: 96
+    result_dir: "ensemble_Gate-T3-TXL-MS_test_0"
+
 test:
   - 2103ts/PI10102_transition_020_c17_to_c5_len904.csv
   - 2103ts/PI10102_transition_021_c5_to_c16_len3625.csv

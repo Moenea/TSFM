@@ -544,3 +544,190 @@ p1/p3/p5 只是新增 result 名称和 YAML 条目，不会修改原始 raw 脚�
 - raw 脚本仍使用 `setting/ZJSH_PI10102ts.yaml` 和不带 `_DIFF` 的 `model_id`。
 - 原始 p8 DIFF 脚本仍使用 `ZJSH_PI10102TS_MS_full_shot_DIFF`，没有 `_p1/_p3/_p5` 后缀。
 - 只有运行 `batch_metrics_zjsh.sh` 时，p1/p3/p5 会作为额外模型出现在最终汇总和图像里。
+
+---
+
+## 11. Gate-Ensemble 融合（raw + DIFF-to-ABS 双源）
+
+在 `Timer-XL-MS`（raw / ABS）与 `Timer-XL-MS-DIFF`（DIFF-to-ABS）两个 base 模型的 pred 上层做晚期融合（late fusion）。三种增量方法都不重训 base 模型，只读 `results/<base_dir>/pred.npy` 与 `true.npy` 并拟合一个轻量 gate / stacker，写出一份新的 `results/ensemble_<NAME>_test_0/{pred.npy, true.npy, fit_log.json}`，让 `batch_metrics_zjsh.sh` 像评估普通模型一样评估它。
+
+### 11.1 三种方法
+
+| 名称 | 方法 | 学习量 | 输入 |
+|---|---|---|---|
+| `Gate-T1-TXL-MS` | 逐步骤静态凸组合权重 `alpha(t) ∈ [0,1]^15`，闭式最小二乘 | 15 个标量 | A、B 的 pred |
+| `Gate-T2-TXL-MS` | Context-only MLP gate：输入窗口 8 维特征 → `sigma(t) ∈ [0,1]^15`；`fused = sigma·A + (1−sigma)·B` | ~小型 MLP（in=8, hidden=32, out=15） | 仅输入窗口特征 |
+| `Gate-T3-TXL-MS` | Stacking MLP：直接预测 15 步；输入 = `[features, A(1..15), B(1..15)]` | 小型 MLP（in=38, hidden=32, out=15） | 特征 + 两源预测 |
+
+8 维上下文特征基于输入窗口的最后 768 步（与 Timer-XL `align_seq_len` 一致）：`last_val, one-step diff, mean96, std96, slope96, range768, last_val−L=160, H=260−last_val`。
+
+### 11.2 训练 / 评估口径
+
+- **训练集**：4 段 test transition 的预测窗口本身。这是因为现行 pipeline 只在 test 上保存 base pred，没有在 val 上保存。
+- **避免泄漏**：用 **leave-one-transition-out**——按 transition id（020/021/022/023）切 4 折，每折 fit on 3 transitions，predict on 1 transition；最终 `pred.npy` 是 4 段 out-of-fold 预测的拼接，与 base 模型在同一组对齐窗口上。
+- **对齐窗口**：`fuse_predictions.py` 复用 `batch_metrics.py` 的 `build_window_starts` + `align_window_mask`，结果与 `setting/batch_metrics_zjsh_pi10102ts.yaml` 的 `align_eval_to: {768, 96}` 完全一致；`Timer-XL-MS-DIFF` 与 `Timer-XL-MS` 的 sl/pl 都是 768/96，所以对齐后两者 window 索引完全相同，可直接逐窗口融合。
+- **eval_steps=15**：fuser 只学前 15 步；保存的 `pred.npy` shape 是 `(N_aligned=3686, 96)`，**前 15 列是融合输出**，**后 81 列直通 source A 的预测**（仅为兼容 batch_metrics 的 horizon 截断）。`batch_metrics.py` 会按 yaml 的 `eval_steps=15` 截断到前 15 步，所以后面那部分不会进入论文级指标。
+
+### 11.3 文件清单（已加入主流水线）
+
+```
+scripts/adaptation/full_shot/PI10102/ensemble/
+  fuse_predictions.py      ← 主 Python 实现（tier1/2/3 + LOO-CV）
+  fuse_tier1.sh            ← 一键 tier1
+  fuse_tier2.sh            ← 一键 tier2
+  fuse_tier3.sh            ← 一键 tier3
+  fuse_all.sh              ← 顺序跑完 3 个 tier
+```
+
+主 yaml `setting/batch_metrics_zjsh_pi10102ts.yaml` 末尾新增 3 条：
+
+```yaml
+- name: "Gate-T1-TXL-MS"
+  seq_len: 768
+  pred_len: 96
+  result_dir: "ensemble_Gate-T1-TXL-MS_test_0"
+- name: "Gate-T2-TXL-MS"
+  seq_len: 768
+  pred_len: 96
+  result_dir: "ensemble_Gate-T2-TXL-MS_test_0"
+- name: "Gate-T3-TXL-MS"
+  seq_len: 768
+  pred_len: 96
+  result_dir: "ensemble_Gate-T3-TXL-MS_test_0"
+```
+
+`fuse_predictions.py` 同时搜 raw + DIFF 两份 yaml 找 base 条目，所以默认配置 `SOURCE_A=Timer-XL-MS-DIFF`, `SOURCE_B=Timer-XL-MS` 即可。若要换 base，传 `SOURCE_A=...` `SOURCE_B=...` 环境变量。
+
+### 11.4 不会影响现有流水线
+
+- 不修改任何 base 模型脚本、`run.py` / `run_partial.py`、`exp_forecast.py`、`batch_metrics.py`。
+- 不读写任何 base 模型的 ckpt 或 pred 目录（只读 `pred.npy` / `true.npy`）。
+- 唯一写入目标是 `results/ensemble_*_test_0/`，名称无冲突。
+- 若不跑 `fuse_*.sh`，则 yaml 中 3 个 ensemble 条目对应目录不存在；运行 `batch_metrics_zjsh.sh` 时 `batch_metrics.py` 会抱怨缺文件——所以在跑 batch_metrics 前要么先跑 fuser，要么暂时注释掉这 3 行（与 DiPCALSTM 同样的注释式开关）。
+
+### 11.5 端到端命令
+
+```bash
+cd /home/aicode/sherwin/TSFM
+
+# 1) 先确保 Timer-XL-MS 与 Timer-XL-MS-DIFF 这两份 base 已经训练好、有 pred.npy/true.npy
+#    （由前面的 § 1 / § 9 章节脚本生成）
+
+# 2) 跑融合（fit + 写 pred/true，纯 CPU 几秒钟完成）
+bash scripts/adaptation/full_shot/PI10102/ensemble/fuse_all.sh
+# 或单独跑某一种方法：
+#   bash scripts/adaptation/full_shot/PI10102/ensemble/fuse_tier1.sh
+#   bash scripts/adaptation/full_shot/PI10102/ensemble/fuse_tier2.sh
+#   bash scripts/adaptation/full_shot/PI10102/ensemble/fuse_tier3.sh
+
+# 3) 用主 batch_metrics 一起评估（会同时刷新所有模型的 metrics_C.json 和图）
+bash scripts/adaptation/full_shot/PI10102/batch_metrics_zjsh.sh
+# → results/ensemble_Gate-T{1,2,3}-TXL-MS_test_0/metrics_C.json
+# → figures/PI10102/{mse_all_patches,...}.png 中会出现 Gate-T1/T2/T3
+# → results/PI10102_Summary/summary.csv 多出 3 行
+
+# 4) (可选) 在 figures/PI10102/plot_fault_prognosis_diff.ipynb 中加入对应 model 名字以画图比较
+```
+
+### 11.6 常用覆盖参数
+
+```bash
+# 换 base 源（例如把 Partial15 版本作为 source A）
+SOURCE_A=Timer-XL-Partial15-MS-DIFF SOURCE_B=Timer-XL-Partial15-MS \
+OUT_PREFIX=Gate-Partial15 \
+bash scripts/adaptation/full_shot/PI10102/ensemble/fuse_all.sh
+# 这会写 results/ensemble_Gate-Partial15-T{1,2,3}-TXL-MS_test_0/，
+# 需要在 yaml 里再补对应 3 行才能被 batch_metrics 看见。
+
+# 调 tier2/3 训练超参
+EPOCHS=600 HIDDEN=64 LR=5e-4 \
+bash scripts/adaptation/full_shot/PI10102/ensemble/fuse_tier2.sh
+```
+
+### 11.7 fit_log.json 关键字段
+
+每次 fuser 运行都会写 `results/ensemble_<NAME>_test_0/fit_log.json`，含：
+- `overall_mse_eval_steps.{source_a, source_b, fused_oof}`：前 15 步上、所有 4 段拼起来的 OOF MSE，方便快速对比；
+- `folds[*]`：每段 transition 在自己被 hold out 那折的 train/test 大小、A/B/fused MSE，以及 tier1 的 `alphas`、tier2 的 `sigma_mean_per_step`、tier2/3 的 `final_loss`。
+
+注意 `fit_log.json` 里的 MSE 是 fuser 内部按 OOF 计算的快速指标，与 `batch_metrics.py` 的 `mse_all_patches` 口径一致但实现独立——最终论文级数字仍以 `batch_metrics_zjsh.sh` 写的 `metrics_C.json` 与 `summary.csv` 为准。
+
+---
+
+## 12. Per-file Δ-space 报警评估（旁路工具）
+
+**动机.** 主线 `batch_metrics.py` 使用 `setting/limits_zjsh.csv` 的单一全局阈值（HH/H/L/LL），适合稳态过程监控；但 PI10102 是多段 *transition*，各段值域不同（起止值差异很大）。对每段过渡而言，"值是不是超过 X" 没有共同语义；"瞬时变化率是不是异常剧烈" 才是。
+
+因此本节引入一套 **完全独立**、**零侵入** 的旁路评估：每个测试 transition 用自己的变化率分位阈值 τ_file = quantile(|Δx|, 0.95)，在 Δ 空间做双侧报警 `|Δx| > τ_file`，再跑一遍 batch_metrics 同款指标。
+
+**显式与主线的隔离边界**（不修改任何已有 csv / 代码 / 模型输出）：
+- 脚本：新增 `scripts/adaptation/full_shot/PI10102/perfile_rate/` 目录；不动 `utils/batch_metrics.py`；
+- 报警 csv：新增 `setting/limits_zjsh_pi10102ts_perfile_rate.csv`；不动 `setting/limits_zjsh.csv`；
+- 结果：写入 `figures/PI10102/diff/`（原始 figures 路径的子文件夹），不覆盖 `figures/PI10102/` 下的任何主线产物。
+
+### 12.1 阈值构建逻辑（`build_limits.py`）
+
+对 yaml 中每个 test transition 文件：
+```python
+arr      = pd.read_csv(...)[target].to_numpy()
+diff     = np.diff(arr)
+tau_file = np.quantile(np.abs(diff), q=0.95)
+# 写入 CSV: filename, HH=+τ, H=+τ, L=-τ, LL=-τ, n_steps, mean|Δ|, std(Δ)
+```
+HH/LL 与 H/L 同号同值（双侧对称），列出 HH/LL 仅为了和 `limits_zjsh` 列名格式对齐、便于人眼对比。后续脚本只读 H 和 L。
+
+### 12.2 Δ-空间换算（`batch_metrics_perfile_rate.py`）
+
+对所有模型（含 raw forecast 与 DIFF-restored）一律在窗口对齐 + eval_steps 截断后再做 Δ 转换：
+
+```python
+last_input        = true_series[window_starts - 1]   # 每条窗口在输入末位的真值
+dpred[:, 0]       = pred[:, 0] - last_input
+dpred[:, 1:]      = np.diff(pred, axis=1)            # 同样对 dtrue
+H_w = H_per_file[file_idx_arr][:, None]              # 按窗口所属 transition 选 τ
+pred_alarm_patch  = ((dpred > H_w) | (dpred < L_w)).any(axis=1)   # 双侧 + 任一步
+true_alarm_patch  = ((dtrue > H_w) | (dtrue < L_w)).any(axis=1)
+```
+
+`raw_to_diff` 对 DIFF 模型与重新积分后的 raw 模型都适用，第 0 步用各自窗口最后输入真值作参考，等价于原始增量定义。
+
+质量门限按窗口的 band 计算：`band_w = (H - L)[file_idx_arr]`，`pred_quality_ok = patch_rmse <= band_w * factor`，与主线 `alarm_quality_rmse_factor` 语义保持一致。
+
+事件级 lead-time / prognosis-error 在 Δ 空间真值报警序列（`build_diff_alarm_series`）上重新连通。
+
+### 12.3 输出结构
+
+```
+figures/PI10102/diff/
+  ├── metrics_C/<safe_model_name>.json   # 每模型 ~40 指标，含 _clean / _qf / _clean_qf
+  ├── summary.csv                         # 与主线 summary 同列名（口径已改为 Δ 空间）
+  ├── summary.md
+  ├── mse_all_patches.png ...             # 与主线同款柱状图
+  ├── summary_radar_C.png
+  └── limits_perfile.csv                  # 入参 limits 的副本，便于追溯
+```
+
+### 12.4 运行入口
+
+`run.sh` 串起两步，可通过环境变量覆盖：
+
+```bash
+# 默认：q=0.95, 写到 figures/PI10102/diff/
+bash scripts/adaptation/full_shot/PI10102/perfile_rate/run.sh
+
+# 自定义 quantile / 输出位置
+QUANTILE=0.90 OUT_DIR=figures/PI10102/diff_q090 \
+LIMITS_CSV=setting/limits_zjsh_pi10102ts_perfile_rate_q090.csv \
+bash scripts/adaptation/full_shot/PI10102/perfile_rate/run.sh
+
+# 跳过 build 直接复用已有 limits
+SKIP_BUILD=1 bash scripts/adaptation/full_shot/PI10102/perfile_rate/run.sh
+```
+
+### 12.5 与主线指标的对比
+
+不要把 `figures/PI10102/summary.csv` 与 `figures/PI10102/diff/summary.csv` 直接横向比较：前者是绝对值/全局阈值口径，后者是 Δ-空间/每段自适应阈值口径。两边给出的是不同问题的答案：
+- 主线："给定一组固定阈值，哪个模型在绝对值上更早识别越限事件？"
+- 本节："给定每段 transition 自己的变化率分布，哪个模型在 Δ 上更早识别变化率异常？"
+
+在每段值域差异显著（如 PI10102）的场景下，本节的 ranking 更能反映 "across-transitions 平均" 的实际表现。
