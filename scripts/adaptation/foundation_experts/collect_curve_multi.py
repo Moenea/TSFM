@@ -152,8 +152,8 @@ def main() -> None:
         print(f"plot -> {png2}")
 
         plt.close(fig)
-    except Exception as exc:  # noqa: BLE001
-        print(f"(plot skipped: {exc})")
+    except ImportError as exc:
+        print(f"(plot skipped: matplotlib not available — {exc})")
 
 
 if __name__ == "__main__":

@@ -22,6 +22,25 @@ RATIOS=${RATIOS:-"0.01 0.02 0.05 0.1 0.25 0.5 1.0"}
 cd "$ROOT"
 mkdir -p "$SUMMARY"
 
+# ── BOOTSTRAP: generate zero-shot Time-MoE dirs if absent ────────────────────
+if [ ! -d results/fm_time_moe_zeroshot_test ]; then
+  echo "[bootstrap] Generating zero-shot Time-MoE test predictions..."
+  CUDA_VISIBLE_DEVICES=0 "$TSFM_PY" "$HERE/time_moe/adapter.py" \
+    --mode predict --zero-shot \
+    --split-file setting/TEP_IDV13_XMEAS07.yaml \
+    --data-root "$DATA_ROOT" --target "$TARGET" \
+    --horizon 15 --out-dir results/fm_time_moe_zeroshot_test --device cuda:0
+fi
+if [ ! -d results/fm_time_moe_zeroshot_val ]; then
+  echo "[bootstrap] Generating zero-shot Time-MoE val predictions..."
+  CUDA_VISIBLE_DEVICES=0 "$TSFM_PY" "$HERE/time_moe/adapter.py" \
+    --mode predict --zero-shot \
+    --split-file setting/TEP_IDV13_XMEAS07_val.yaml \
+    --data-root "$DATA_ROOT" --target "$TARGET" \
+    --horizon 15 --out-dir results/fm_time_moe_zeroshot_val --device cuda:0
+fi
+# ─────────────────────────────────────────────────────────────────────────────
+
 for r in $RATIOS; do
   TAG=$(printf 'r%s' "$r" | tr '.' 'p')
   echo ""
