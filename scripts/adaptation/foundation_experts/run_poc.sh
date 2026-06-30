@@ -42,15 +42,30 @@ fi
 # 1) New-model adapters — each guarded by adapter existence
 #    MOIRAI is intentionally excluded (uni2ts incompatibility).
 # ---------------------------------------------------------------------------
-if [ -f "$HERE/time_moe/run.sh" ] && [ ! -d "results/fm_time_moe_${TAG}_test" ]; then
-  echo "[run_poc] Running Time-MoE adapter..."
-  # Time-MoE fine-tuning overfits this small single-variate dataset — zero-shot generalizes better; see WORKFLOW.md
-  SUBSET_RATIO=1.0 CUDA_VISIBLE_DEVICES=0 FM_PY=$FM_PY \
-    bash "$HERE/time_moe/run.sh" --zero-shot
-elif [ -f "$HERE/time_moe/run.sh" ]; then
-  echo "[run_poc] results/fm_time_moe_${TAG}_test already exists — skipping Time-MoE."
+# Time-MoE is always zero-shot — use the same constant dirs as run_curve_multi.sh.
+if [ -f "$HERE/time_moe/adapter.py" ]; then
+  if [ ! -d "results/fm_time_moe_zeroshot_test" ]; then
+    echo "[run_poc] Generating zero-shot Time-MoE test predictions..."
+    CUDA_VISIBLE_DEVICES=0 "$TSFM_PY" "$HERE/time_moe/adapter.py" \
+      --mode predict --zero-shot \
+      --split-file setting/TEP_IDV13_XMEAS07.yaml \
+      --data-root "$DATA_ROOT" --target "$TARGET" \
+      --horizon 15 --out-dir results/fm_time_moe_zeroshot_test --device cuda:0
+  else
+    echo "[run_poc] results/fm_time_moe_zeroshot_test already exists — skipping."
+  fi
+  if [ ! -d "results/fm_time_moe_zeroshot_val" ]; then
+    echo "[run_poc] Generating zero-shot Time-MoE val predictions..."
+    CUDA_VISIBLE_DEVICES=0 "$TSFM_PY" "$HERE/time_moe/adapter.py" \
+      --mode predict --zero-shot \
+      --split-file setting/TEP_IDV13_XMEAS07_val.yaml \
+      --data-root "$DATA_ROOT" --target "$TARGET" \
+      --horizon 15 --out-dir results/fm_time_moe_zeroshot_val --device cuda:0
+  else
+    echo "[run_poc] results/fm_time_moe_zeroshot_val already exists — skipping."
+  fi
 else
-  echo "[run_poc] time_moe/run.sh not found — skipping Time-MoE."
+  echo "[run_poc] time_moe/adapter.py not found — skipping Time-MoE."
 fi
 
 if [ -f "$HERE/sundial/run.sh" ] && [ ! -d "results/fm_sundial_${TAG}_test" ]; then
@@ -73,12 +88,12 @@ GATE=results/ensemble_Gate-multi_${TAG}_test
 EXPERTS=(--expert "diff:$DIFF" --expert "raw:$RAW")
 VAL_EXPERTS=(--val-expert "diff:$DIFF_VAL" --val-expert "raw:$RAW_VAL")
 
-if [ -d "results/fm_time_moe_${TAG}_test" ]; then
-  EXPERTS+=(--expert "time_moe:results/fm_time_moe_${TAG}_test")
-  VAL_EXPERTS+=(--val-expert "time_moe:results/fm_time_moe_${TAG}_val")
-  echo "[run_poc] Time-MoE test dir found — including in gate."
+if [ -d "results/fm_time_moe_zeroshot_test" ]; then
+  EXPERTS+=(--expert "time_moe:results/fm_time_moe_zeroshot_test")
+  VAL_EXPERTS+=(--val-expert "time_moe:results/fm_time_moe_zeroshot_val")
+  echo "[run_poc] Time-MoE zeroshot dir found — including in gate."
 else
-  echo "[run_poc] results/fm_time_moe_${TAG}_test absent — excluding Time-MoE from gate."
+  echo "[run_poc] results/fm_time_moe_zeroshot_test absent — excluding Time-MoE from gate."
 fi
 
 if [ -d "results/fm_sundial_${TAG}_test" ]; then
@@ -111,8 +126,8 @@ EVAL=(
   --expert "raw:$RAW"
   --expert "gate:$GATE"
 )
-if [ -d "results/fm_time_moe_${TAG}_test" ]; then
-  EVAL+=(--expert "time_moe:results/fm_time_moe_${TAG}_test")
+if [ -d "results/fm_time_moe_zeroshot_test" ]; then
+  EVAL+=(--expert "time_moe:results/fm_time_moe_zeroshot_test")
 fi
 if [ -d "results/fm_sundial_${TAG}_test" ]; then
   EVAL+=(--expert "sundial:results/fm_sundial_${TAG}_test")

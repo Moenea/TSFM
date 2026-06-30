@@ -92,10 +92,10 @@ def main() -> None:
     test_stack, test_trues = _load_stack(test_experts, args.horizon)  # (N,Bt,H)
     val_true = val_trues[0]
     test_true = test_trues[0]
-    for k in range(1, n):  # alignment guard (generous: round-trip float + diff-restore)
-        if not np.allclose(val_trues[k], val_true, atol=1e-1):
+    for k in range(1, n):  # alignment guard (round-trip float + diff-restore noise ~1e-4)
+        if not np.allclose(val_trues[k], val_true, atol=1e-2):
             raise ValueError(f"val true mismatch for expert {val_experts[k][0]}")
-        if not np.allclose(test_trues[k], test_true, atol=1e-1):
+        if not np.allclose(test_trues[k], test_true, atol=1e-2):
             raise ValueError(f"test true mismatch for expert {test_experts[k][0]}")
 
     val_feat = io.context_features(args.data_root, args.val_split, args.target,
