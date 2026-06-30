@@ -44,8 +44,9 @@ fi
 # ---------------------------------------------------------------------------
 if [ -f "$HERE/time_moe/run.sh" ] && [ ! -d "results/fm_time_moe_${TAG}_test" ]; then
   echo "[run_poc] Running Time-MoE adapter..."
+  # Time-MoE fine-tuning overfits this small single-variate dataset — zero-shot generalizes better; see WORKFLOW.md
   SUBSET_RATIO=1.0 CUDA_VISIBLE_DEVICES=0 FM_PY=$FM_PY \
-    bash "$HERE/time_moe/run.sh"
+    bash "$HERE/time_moe/run.sh" --zero-shot
 elif [ -f "$HERE/time_moe/run.sh" ]; then
   echo "[run_poc] results/fm_time_moe_${TAG}_test already exists — skipping Time-MoE."
 else
