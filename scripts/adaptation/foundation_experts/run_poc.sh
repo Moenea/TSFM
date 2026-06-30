@@ -42,18 +42,22 @@ fi
 # 1) New-model adapters — each guarded by adapter existence
 #    MOIRAI is intentionally excluded (uni2ts incompatibility).
 # ---------------------------------------------------------------------------
-if [ -f "$HERE/time_moe/run.sh" ]; then
+if [ -f "$HERE/time_moe/run.sh" ] && [ ! -d "results/fm_time_moe_${TAG}_test" ]; then
   echo "[run_poc] Running Time-MoE adapter..."
   SUBSET_RATIO=1.0 CUDA_VISIBLE_DEVICES=0 FM_PY=$FM_PY \
     bash "$HERE/time_moe/run.sh"
+elif [ -f "$HERE/time_moe/run.sh" ]; then
+  echo "[run_poc] results/fm_time_moe_${TAG}_test already exists — skipping Time-MoE."
 else
   echo "[run_poc] time_moe/run.sh not found — skipping Time-MoE."
 fi
 
-if [ -f "$HERE/sundial/run.sh" ]; then
+if [ -f "$HERE/sundial/run.sh" ] && [ ! -d "results/fm_sundial_${TAG}_test" ]; then
   echo "[run_poc] Running Sundial adapter..."
   SUBSET_RATIO=1.0 CUDA_VISIBLE_DEVICES=0 FM_PY=$FM_PY \
     bash "$HERE/sundial/run.sh"
+elif [ -f "$HERE/sundial/run.sh" ]; then
+  echo "[run_poc] results/fm_sundial_${TAG}_test already exists — skipping Sundial."
 else
   echo "[run_poc] sundial/run.sh not found — skipping Sundial (weights not ready)."
 fi
