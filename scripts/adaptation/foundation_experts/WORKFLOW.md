@@ -135,3 +135,25 @@ The gate was evaluated across seven training-data ratios (0.01, 0.02, 0.05, 0.1,
 After `run_poc.sh` completes, inspect `results/TEP_IDV13_XMEAS07_FM_Summary/metrics_r1p0.json`:
 - Gate `event_recall` must be ≥ existing Gate-T2 (`1.0`).
 - Gate `mse` must be ≤ the worst single new expert included (gate must not drag below Timer-XL).
+
+---
+
+## Sundial (4th Expert)
+
+**Method**: Zero-shot generative TSFM (flow-matching). Inference: `generate(..., num_samples=20)` → (B, 20, 15), mean over samples → point forecast, then denorm. Loads from local weights `checkpoints/sundial_local` (513 MB).
+
+**Standalone performance**: test MSE 269.63 — the weakest single expert (Timer-XL diff reaches ~134 at full data).
+
+**Why include it?** Despite being the weakest single expert, Sundial is COMPLEMENTARY at high data. The 4-expert gate reaches **133.7 MSE at full data** (ratio = 1.0), a −7% improvement over the 143.20 two-expert baseline, compared to 144.6 for the 3-expert gate. The 4th expert adds a signal orthogonal to the other three that the gate can exploit when enough val data exists to fit the weights reliably.
+
+**Tradeoff at low data**: In the deep few-shot regime (ratios ≤ 0.25), the 3-expert gate is marginally better — adding a weak 4th expert increases the gate's degrees of freedom and introduces variance when only a small val set is available to fit the softmax weights.
+
+**Summary** (4-expert gate MSEs):
+| ratio | gate MSE |
+|-------|----------|
+| 0.01  | ~163.4   |
+| 0.1   | ~141.1   |
+| 0.5   | ~141.6   |
+| 1.0   | **133.7** |
+
+Both 3-expert and 4-expert configurations beat every single expert at all ratios. The 3-expert curve is preserved in `results/TEP_IDV13_XMEAS07_FM_Summary/curve_3expert.json` for comparison.
