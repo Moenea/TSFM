@@ -1,7 +1,7 @@
 """Aggregate per-ratio FM-gate metrics into a sample-count vs performance curve.
 
 Mirrors scripts/adaptation/few_shot/TEP_IDV13/collect_curve.py but targets the
-3-expert heterogeneous gate (diff, raw, time_moe) plus the fused gate output.
+4-expert heterogeneous gate (diff, raw, time_moe, sundial) plus the fused gate output.
 """
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 
 
-EXPERTS = ["diff", "raw", "time_moe", "gate"]
+EXPERTS = ["diff", "raw", "time_moe", "sundial", "gate"]
 METRICS = [
     "mse", "mae", "event_recall", "mean_lead_time_h",
     "pre_onset_false_alarm_rate", "window_precision", "window_recall",
@@ -105,7 +105,8 @@ def main() -> None:
 
         # Panel 0: MSE vs # train windows per expert + gate
         markers = {"diff": ("s-", "tab:blue"), "raw": ("o-", "tab:orange"),
-                   "time_moe": ("D-", "tab:purple"), "gate": ("^-", "tab:green")}
+                   "time_moe": ("D-", "tab:purple"), "sundial": ("v-", "tab:brown"),
+                   "gate": ("^-", "tab:green")}
         for exp, (mk, col) in markers.items():
             x, y = xy(f"{exp}_mse")
             if x:
