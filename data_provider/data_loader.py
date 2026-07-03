@@ -407,6 +407,52 @@ class MultivariateDatasetYAMLSplit(MultivariateDatasetBenchmark):
         return self.n_timepoint
 
 
+class MultivariateDatasetYAMLSplitFewShot(MultivariateDatasetYAMLSplit):
+    """Few-shot variant of :class:`MultivariateDatasetYAMLSplit`.
+
+    The TRAINING set is reduced to a seeded, random, NESTED subset of the full
+    training windows; val/test are left full and untouched. Three properties make
+    the data-scaling (few-shot) experiment rigorous:
+
+      * Random, not prefix. The base class' ``subset_rand_ratio`` merely truncates
+        ``__len__`` to the first ``ratio*N`` indices, which ``_locate`` maps to the
+        earliest windows of the first run (mostly pre-fault / healthy). Here windows
+        are drawn uniformly across ALL train runs, so fault-region windows are
+        represented even at tiny ratios.
+      * Nested. A single fixed permutation is reused, so a smaller ratio is a strict
+        subset of a larger one (0.05 ⊂ 0.10 ⊂ ...). "Amount of data" is then the only
+        variable changing along the curve.
+      * Deterministic and expert-consistent. The permutation depends only on
+        ``FEW_SHOT_SEED`` and the (identical) train window count, so the raw and DIFF
+        experts adapt on the SAME windows — a fair fusion comparison.
+
+    The StandardScaler / control limits are still fit on the full train files
+    (handled by the base class). This is intentional for fault prognosis: normal-
+    operation data for scaling is abundant; the few-shot constraint applies to the
+    fault-adaptation windows, and the model additionally uses instance norm.
+    """
+
+    FEW_SHOT_SEED = 2021
+
+    def __read_data__(self):
+        super().__read_data__()
+        self._subset_index = None
+        if self.set_type == 0 and self.subset_rand_ratio < 1.0:
+            k = max(int(self.n_timepoint * self.subset_rand_ratio), 1)
+            perm = np.random.RandomState(self.FEW_SHOT_SEED).permutation(self.n_timepoint)
+            self._subset_index = np.sort(perm[:k])
+
+    def __len__(self):
+        if getattr(self, '_subset_index', None) is not None:
+            return int(self._subset_index.shape[0])
+        return self.n_timepoint
+
+    def __getitem__(self, index):
+        if getattr(self, '_subset_index', None) is not None:
+            index = int(self._subset_index[index])
+        return super().__getitem__(index)
+
+
 class Global_Temp(Dataset):
     def __init__(self, root_path, flag='train', size=None, data_path='ETTh1.csv', scale=True, nonautoregressive=False, test_flag='T', subset_rand_ratio=1.0):
         self.seq_len = size[0]

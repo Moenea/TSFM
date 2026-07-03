@@ -271,14 +271,15 @@ class Exp_Forecast(Exp_Basic):
         print("info:", self.args.test_seq_len, self.args.input_token_len, self.args.output_token_len, self.args.test_pred_len)
         if test:
             print('loading model')
-            setting = self.args.test_dir
+            checkpoint_setting = self.args.test_dir
             best_model_path = self.args.test_file_name
-            print("loading model from {}".format(os.path.join(self.args.checkpoints, setting, best_model_path)))
-            checkpoint = torch.load(os.path.join(self.args.checkpoints, setting, best_model_path))
+            print("loading model from {}".format(os.path.join(self.args.checkpoints, checkpoint_setting, best_model_path)))
+            checkpoint = torch.load(os.path.join(self.args.checkpoints, checkpoint_setting, best_model_path))
             for name, param in self.model.named_parameters():
                 if not param.requires_grad and name not in checkpoint:
                     checkpoint[name] = param
             self.model.load_state_dict(checkpoint)
+            setting = getattr(self.args, 'result_setting', None) or checkpoint_setting
             
         preds = []
         trues = []

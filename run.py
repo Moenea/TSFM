@@ -47,6 +47,8 @@ if __name__ == '__main__':
     parser.add_argument('--nonautoregressive', action='store_true', help='nonautoregressive', default=False)
     parser.add_argument('--test_dir', type=str, default='./test', help='test dir')
     parser.add_argument('--test_file_name', type=str, default='checkpoint.pth', help='test file')
+    parser.add_argument('--result_setting', type=str, default=None,
+                        help='optional result directory name for checkpoint inference; defaults to test_dir')
     parser.add_argument('--restore_diff_to_raw', action='store_true', default=False,
                         help='save differenced outputs as pred_diff/true_diff and replace pred/true with raw-scale reconstruction')
     parser.add_argument('--raw_split_file', type=str, default=None,

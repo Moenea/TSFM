@@ -1,4 +1,4 @@
-from data_provider.data_loader import UnivariateDatasetBenchmark, MultivariateDatasetBenchmark, MultivariateDatasetYAMLSplit, Global_Temp, Global_Wind, Dataset_ERA5_Pretrain, Dataset_ERA5_Pretrain_Test, UTSD, UTSD_Npy
+from data_provider.data_loader import UnivariateDatasetBenchmark, MultivariateDatasetBenchmark, MultivariateDatasetYAMLSplit, MultivariateDatasetYAMLSplitFewShot, Global_Temp, Global_Wind, Dataset_ERA5_Pretrain, Dataset_ERA5_Pretrain_Test, UTSD, UTSD_Npy
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 
@@ -6,6 +6,7 @@ data_dict = {
     'UnivariateDatasetBenchmark': UnivariateDatasetBenchmark,
     'MultivariateDatasetBenchmark': MultivariateDatasetBenchmark,
     'MultivariateDatasetYAMLSplit': MultivariateDatasetYAMLSplit,
+    'MultivariateDatasetYAMLSplitFewShot': MultivariateDatasetYAMLSplitFewShot,
     'Global_Temp': Global_Temp,
     'Global_Wind': Global_Wind,
     'Era5_Pretrain': Dataset_ERA5_Pretrain,
@@ -28,7 +29,7 @@ def data_provider(args, flag):
         batch_size = args.batch_size
 
     extra_kwargs = {}
-    if args.data == 'MultivariateDatasetYAMLSplit':
+    if args.data in ('MultivariateDatasetYAMLSplit', 'MultivariateDatasetYAMLSplitFewShot'):
         extra_kwargs['split_file'] = getattr(args, 'split_file', None)
         extra_kwargs['features'] = getattr(args, 'features', 'M')
         extra_kwargs['target'] = getattr(args, 'target', None)
