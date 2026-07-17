@@ -1,0 +1,47 @@
+% Algorithm 1 — Gate-based ensemble of TSFMs for few-shot fault prognosis
+% Standalone, cropped PDF (drop-in figure). The algorithm environment below can
+% also be copied verbatim into the manuscript source; it needs these packages in
+% the preamble:
+%   \usepackage{amsmath,amssymb}
+%   \usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+% Compile:  pdflatex algorithm1.tex
+%
+% Equation cross-references match Methodology_Proposed_Method.docx:
+%   (3) control limits   (9) instance norm   (8) few-shot subset   (7) alignment
+%   (10) raw op  (11) diff op  (12) context features  (13) gate  (19) gate objective
+%   (14) fusion  (15) alarm flag  (18) preFAR
+\documentclass[border=8pt]{standalone}
+\usepackage{amsmath,amssymb}
+\usepackage{float}
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+\usepackage{varwidth}
+
+% right-aligned triangle comment for the equation cross-references
+\SetKwComment{Eqc}{$\triangleright$\,}{}
+\SetCommentSty{textnormal}  % comments in normal roman (not typewriter)
+\SetKwInOut{Input}{Input}
+\SetKwInOut{Output}{Output}
+
+\begin{document}
+\begin{varwidth}{6.6in}
+\begin{algorithm}[H]
+\DontPrintSemicolon
+\caption{Gate-based ensemble of TSFMs for few-shot fault prognosis}
+\label{alg:gate-ensemble}
+\Input{window stream $\{X_t\}$; target $y$; few-shot ratio $\rho$; pretrained TSFMs $\{\theta_0^{(i)}\}$}
+\Output{fused forecasts $\hat{y}^{\mathrm{gate}}$ and alarm decisions $\{A_t\}$ on the test split}
+\BlankLine
+Fit control limits $(\ell,u)$ and scaler on healthy training data \Eqc*[r]{Eq.~(3),~(9)}
+Draw nested few-shot subset $\mathcal{S}_{\rho}$ by seeded permutation \Eqc*[r]{Eq.~(8)}
+\For{each operator $i \in \{$\emph{Timer-XL-raw}, \emph{Timer-XL-diff}, \emph{Time-MoE}, \emph{Sundial}$\}$}{
+  Obtain $\theta^{(i)}$: few-shot align Timer-XL views from $\theta_0^{(i)}$, else use pretrained \Eqc*[r]{Eq.~(7)}
+  Infer $\hat{y}^{(i)}$ on validation and test (diff view restored) \Eqc*[r]{Eq.~(10),~(11)}
+}
+Extract context features $\varphi(X)$ on validation and test \Eqc*[r]{Eq.~(12)}
+Train gate $g_{\psi}$ on validation with operators frozen \Eqc*[r]{Eq.~(13),~(19)}
+Fuse operators on test by per-horizon routing \Eqc*[r]{Eq.~(14)}
+Map fused forecast to alarms, lead times and preFAR \Eqc*[r]{Eq.~(15)--(18)}
+\Return $\hat{y}^{\mathrm{gate}}$, $\{A_t\}$\;
+\end{algorithm}
+\end{varwidth}
+\end{document}

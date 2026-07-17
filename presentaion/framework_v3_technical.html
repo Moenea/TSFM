@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XMEAS10 Gate Fusion · Overall Framework — V3 Technical Schematic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ffffff; --panel:#f7f8fb; --ink:#0b0b0c; --ink-soft:#37373b;
+    --grey-1:#f1f2f0; --grey-2:#e6e6e2; --grey-3:#6c6c6c; --grey-4:#9a9a97;
+    --accent:#002FA7; --accent-rgb:0,47,167; --accent-bright:#3f5fd6; --accent-soft:#eaeffb;
+    --line:#e0e2e6; --line-2:#c7cbd4;
+    --amber:#8a5a00; --amber-soft:#fbf3e3; --green:#0d6b4f;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  body{
+    background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;
+    padding:42px clamp(16px,3.5vw,52px) 66px;
+    background-image:linear-gradient(rgba(var(--accent-rgb),.045) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--accent-rgb),.045) 1px,transparent 1px);
+    background-size:32px 32px;
+  }
+  .wrap{max-width:1400px;margin:0 auto}
+  .mono{font-family:var(--mono)}
+
+  header{margin-bottom:26px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);font-weight:600;display:flex;align-items:center;gap:12px}
+  .eyebrow::after{content:"";flex:1;height:1px;background:var(--line-2)}
+  h1{font-size:clamp(24px,3vw,38px);font-weight:800;letter-spacing:-.02em;line-height:1.06;margin:13px 0 9px}
+  h1 .b{color:var(--accent)}
+  .thesis{font-size:clamp(13.5px,1.35vw,16px);color:var(--ink-soft);max-width:78ch}
+  .notation{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .nt{font-family:var(--mono);font-size:11.5px;padding:5px 10px;border:1px solid var(--line-2);border-radius:5px;background:#fff;color:var(--ink-soft)}
+  .nt b{color:var(--accent);font-weight:700}
+
+  .sect-tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--grey-3);display:flex;align-items:center;gap:10px;margin:26px 0 12px}
+  .sect-tag::before{content:"";width:16px;height:2px;background:var(--accent)}
+  .sect-tag::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  /* ---- core schematic: two tracks converge into fusion ---- */
+  .schem{display:grid;grid-template-columns:minmax(0,1fr) 58px 300px;grid-template-rows:auto auto;gap:14px 0;align-items:center}
+  .track{display:flex;align-items:center;gap:0;min-width:0}
+  .node{border:1.5px solid var(--line-2);border-radius:7px;background:#fff;padding:11px 13px;min-width:0}
+  .node .nh{font-size:12.5px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:7px}
+  .node .nk{font-family:var(--mono);font-size:10px;color:var(--grey-3);margin-top:5px;line-height:1.5}
+  .node .nk b{color:var(--ink-soft)}
+  .node.accentline{border-left:4px solid var(--accent)}
+  .node.amberline{border-left:4px solid var(--amber)}
+
+  /* wire between nodes carries a shape chip */
+  .wire{flex:0 0 66px;position:relative;height:2px;align-self:center;display:flex;align-items:center;justify-content:center}
+  .wire::before{content:"";position:absolute;left:4px;right:12px;top:50%;height:1.6px;background:var(--accent);transform:translateY(-50%)}
+  .wire::after{content:"";position:absolute;right:6px;top:50%;width:0;height:0;border:5px solid transparent;border-left-color:var(--accent);transform:translateY(-50%)}
+  .wire .shape{position:relative;z-index:2;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--accent);background:var(--paper);padding:2px 6px;border:1px solid var(--line-2);border-radius:20px;white-space:nowrap;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+  .wire.short{flex-basis:52px}
+
+  /* expert bank node (multi-row) */
+  .bank{border:1.5px solid var(--line-2);border-radius:8px;background:#fff;overflow:hidden;min-width:0}
+  .bank .bt{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-3);padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
+  .erow{display:flex;align-items:center;gap:9px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12px}
+  .erow:last-child{border-bottom:0}
+  .erow .en{font-weight:700;min-width:96px}
+  .erow.adapt .en{color:var(--accent)} .erow.zero .en{color:var(--amber)}
+  .erow .ek{font-family:var(--mono);font-size:10px;color:var(--grey-3);line-height:1.4}
+  .erow .tag{margin-left:auto;font-family:var(--mono);font-size:8.5px;font-weight:700;padding:2px 5px;border-radius:3px;letter-spacing:.04em;white-space:nowrap}
+  .tag.a{background:var(--accent-soft);color:var(--accent)} .tag.z{background:var(--amber-soft);color:var(--amber)} .tag.base{background:var(--accent);color:#fff}
+
+  /* fusion block spanning both rows */
+  .fusion{grid-column:3;grid-row:1 / span 2;background:var(--accent);color:#fff;border-radius:9px;padding:16px;display:flex;flex-direction:column;gap:11px;box-shadow:0 14px 36px -16px rgba(var(--accent-rgb),.75);align-self:stretch;justify-content:center}
+  .fusion .fn{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#c3d0ff}
+  .fusion .ft{font-size:15px;font-weight:800}
+  .fusion .eq{font-family:var(--mono);font-size:12px;line-height:1.7;background:rgba(0,0,0,.2);border-radius:7px;padding:11px 12px}
+  .fusion .eq .k{color:#9fb4ff}
+  .fusion .eq .c{color:#ffd58a}
+  .fusion .step{font-family:var(--mono);font-size:10px;color:#c3d0ff;line-height:1.6}
+  .fusion .step b{color:#fff}
+  .outchip{font-family:var(--mono);font-size:10.5px;background:#fff;color:var(--accent);font-weight:700;border-radius:6px;padding:7px 10px;text-align:center}
+
+  /* converge SVG col */
+  .converge{grid-column:2;grid-row:1 / span 2;align-self:stretch}
+  .converge svg{width:100%;height:100%;display:block}
+
+  /* gate internal expansion under track B */
+  .gatemlp{border:1.5px solid var(--accent);border-radius:8px;background:var(--accent-soft);padding:10px 13px;min-width:0}
+  .gatemlp .gt{font-size:12.5px;font-weight:800;color:var(--accent);display:flex;align-items:center;gap:7px}
+  .gatemlp .layers{font-family:var(--mono);font-size:10px;color:var(--ink-soft);margin-top:6px;line-height:1.6;display:flex;flex-wrap:wrap;gap:5px}
+  .lchip{background:#fff;border:1px solid var(--line-2);border-radius:4px;padding:2px 6px}
+  .lchip.sm{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+
+  /* annotation cards row */
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}
+  .acard{border:1.5px solid var(--line-2);border-radius:8px;background:#fff;padding:14px 15px}
+  .acard .at{font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px;margin-bottom:4px}
+  .acard .asub{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-4);margin-bottom:9px}
+  .acard.cl .at{color:var(--green)} .acard.cl{border-top:3px solid var(--green)}
+  .acard.ph .at{color:var(--accent)} .acard.ph{border-top:3px solid var(--accent)}
+  .acard.mx .at{color:var(--ink)} .acard.mx{border-top:3px solid var(--ink)}
+  .formula{font-family:var(--mono);font-size:11px;background:var(--grey-1);border-radius:6px;padding:9px 11px;line-height:1.7;color:var(--ink-soft);margin-bottom:9px}
+  .formula .k{color:var(--accent);font-weight:700}
+  .formula .g{color:var(--green);font-weight:700}
+  .note{font-family:var(--mono);font-size:10.5px;color:var(--grey-3);line-height:1.6}
+  .note b{color:var(--ink-soft)}
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .mini{border:1px solid var(--line);border-radius:6px;padding:9px 10px}
+  .mini .mh{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-3);margin-bottom:6px}
+  .mini.fit{background:var(--accent-soft);border-color:transparent}
+  .mini.inf{background:var(--panel)}
+  .kv{font-family:var(--mono);font-size:10.5px;line-height:1.65;color:var(--ink-soft)}
+  .kv b{color:var(--accent)}
+  .metriclist{font-family:var(--mono);font-size:10.5px;line-height:1.75;color:var(--ink-soft)}
+  .metriclist .m{display:flex;gap:8px}
+  .metriclist .mk{color:var(--accent);font-weight:700;min-width:112px}
+  .metriclist .mk.hi{color:var(--ink)}
+
+  /* 8-feature strip */
+  .featstrip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .fcell{border:1px solid var(--line);border-radius:6px;padding:8px 9px;background:#fff}
+  .fcell .fi{font-family:var(--mono);font-size:9px;color:var(--grey-4)}
+  .fcell .fn2{font-size:11.5px;font-weight:700;margin:1px 0 3px}
+  .fcell .ff{font-family:var(--mono);font-size:9.5px;color:var(--grey-3);line-height:1.4}
+  .fcell.cl-f{border-left:3px solid var(--green)}
+
+  footer{margin-top:30px;padding-top:16px;border-top:2px solid var(--ink);font-family:var(--mono);font-size:11px;color:var(--grey-4);line-height:1.7}
+  footer b{color:var(--grey-3)} footer .files span{color:var(--accent)}
+
+  @media (prefers-reduced-motion:no-preference){
+    header,.schem,.sect-tag,.cards,.featstrip{opacity:0;transform:translateY(8px);animation:rise .5s cubic-bezier(.2,.7,.3,1) forwards}
+    .schem{animation-delay:.06s}.cards{animation-delay:.12s}
+    @keyframes rise{to{opacity:1;transform:none}}
+  }
+  @media (max-width:960px){
+    .schem{grid-template-columns:1fr;grid-template-rows:auto}
+    .converge{display:none}
+    .fusion{grid-column:1;grid-row:auto}
+    .track{flex-wrap:wrap;gap:8px}
+    .wire{flex-basis:40px}
+    .cards,.featstrip{grid-template-columns:1fr}
+  }
+  @media print{body{padding:0;background:#fff}*{animation:none!important;opacity:1!important;transform:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Heterogeneous-TSFM Fusion &nbsp;·&nbsp; Overall Framework &nbsp;·&nbsp; V3 Technical Schematic</div>
+    <h1>The gate, <span class="b">tensor by tensor</span>:<br>context → weights → <span class="b">einsum</span> fusion</h1>
+    <p class="thesis">Two tracks meet at the fusion node. <b>Track A</b> stacks the four experts' forecasts into one tensor; <b>Track B</b> turns the raw signal's context into softmax weights. Shapes on every wire are exact; the reduction is <span class="mono">einsum("bhn,nbh→bh")</span>.</p>
+    <div class="notation">
+      <span class="nt"><b>B</b> = # windows (test ≈ Run 9–10)</span>
+      <span class="nt"><b>H</b> = 15 horizon steps</span>
+      <span class="nt"><b>N</b> = 4 experts</span>
+      <span class="nt">context seq_len = 96 &nbsp;·&nbsp; pred_len = 96</span>
+    </div>
+  </header>
+
+  <div class="sect-tag">Core computation graph</div>
+
+  <div class="schem">
+    <!-- TRACK A : predictions -->
+    <div class="track" style="grid-column:1;grid-row:1">
+      <div class="bank">
+        <div class="bt">Track A · expert forecasts · pₙ ∈ ℝ<sup>B×H</sup></div>
+        <div class="erow adapt"><span class="en">Timer-XL diff</span><span class="ek">MS 5-var · diff+restore</span><span class="tag base">base</span></div>
+        <div class="erow adapt"><span class="en">Timer-XL raw</span><span class="ek">MS 5-var · raw target</span><span class="tag a">adapt</span></div>
+        <div class="erow zero"><span class="en">Time-MoE</span><span class="ek">univariate · norm+generate</span><span class="tag z">zero-shot</span></div>
+        <div class="erow zero"><span class="en">Sundial</span><span class="ek">univariate · mean 20 draws</span><span class="tag z">zero-shot</span></div>
+      </div>
+      <div style="flex:1 1 auto;min-width:12px"></div>
+      <div class="wire"><span class="shape">stack → (N,B,H)</span></div>
+    </div>
+
+    <!-- TRACK B : weights -->
+    <div class="track" style="grid-column:1;grid-row:2">
+      <div class="node accentline" style="flex:0 0 auto">
+        <div class="nh">Raw XMEAS10 history</div>
+        <div class="nk">per test window · <b>values[local : local+96]</b></div>
+      </div>
+      <div class="wire short"><span class="shape">(B,96)</span></div>
+      <div class="node" style="flex:0 0 auto">
+        <div class="nh">context_features</div>
+        <div class="nk">8 scalars / window<br>standardize by <b>val μ, σ</b></div>
+      </div>
+      <div class="wire short"><span class="shape">(B,8)</span></div>
+      <div class="gatemlp" style="flex:1 1 auto">
+        <div class="gt">GateMLPMulti → softmax</div>
+        <div class="layers">
+          <span class="lchip">Lin 8→32</span><span class="lchip">GELU</span><span class="lchip">Lin 32→32</span><span class="lchip">GELU</span><span class="lchip">Lin 32→H·N</span><span class="lchip">view(B,H,N)</span><span class="lchip sm">softmax<sub>N</sub></span>
+        </div>
+      </div>
+      <div class="wire"><span class="shape">w → (B,H,N)</span></div>
+    </div>
+
+    <!-- converge -->
+    <div class="converge" aria-hidden="true">
+      <svg viewBox="0 0 58 100" preserveAspectRatio="none">
+        <path d="M0 26 C 30 26, 26 50, 54 50" stroke="#002FA7" stroke-width="1.3" fill="none" vector-effect="non-scaling-stroke"/>
+        <path d="M0 74 C 30 74, 26 50, 54 50" stroke="#002FA7" stroke-width="1.3" fill="none" vector-effect="non-scaling-stroke"/>
+        <path d="M47 44 L56 50 L47 56" stroke="#002FA7" stroke-width="1.4" fill="none" vector-effect="non-scaling-stroke"/>
+      </svg>
+    </div>
+
+    <!-- FUSION -->
+    <div class="fusion">
+      <div class="fn">Fusion node</div>
+      <div class="ft">Weighted reduction over N</div>
+      <div class="eq"><span class="c">fused</span>[b,h] =<br>&nbsp;&nbsp;Σ<sub>n</sub> <span class="k">w</span>[b,h,n]·<span class="k">stack</span>[n,b,h]<br><br>= einsum(<span class="k">"bhn,nbh→bh"</span>)</div>
+      <div class="step"><b>write-back:</b> base pred (B,96); first <b>H=15</b> steps ← fused, tail kept</div>
+      <div class="outchip">→ pred.npy (B, 96, 1)</div>
+    </div>
+  </div>
+
+  <div class="sect-tag">Track B · the 8 context features &nbsp;— computed from the XMEAS10 history only (never the experts' predictions)</div>
+  <div class="featstrip">
+    <div class="fcell"><div class="fi">f0</div><div class="fn2">last</div><div class="ff">values[start−1]</div></div>
+    <div class="fcell"><div class="fi">f1</div><div class="fn2">Δ last</div><div class="ff">last − values[start−2]</div></div>
+    <div class="fcell"><div class="fi">f2</div><div class="fn2">mean₉₆</div><div class="ff">short_window.mean()</div></div>
+    <div class="fcell"><div class="fi">f3</div><div class="fn2">std₉₆</div><div class="ff">short_window.std(ddof=0)</div></div>
+    <div class="fcell"><div class="fi">f4</div><div class="fn2">slope</div><div class="ff">Σ(x̃·ỹ) / Σx̃² &nbsp;(LSQ, 96)</div></div>
+    <div class="fcell"><div class="fi">f5</div><div class="fn2">range₉₆</div><div class="ff">long.max − long.min</div></div>
+    <div class="fcell cl-f"><div class="fi">f6</div><div class="fn2">last − low</div><div class="ff">margin to lower limit</div></div>
+    <div class="fcell cl-f"><div class="fi">f7</div><div class="fn2">high − last</div><div class="ff">margin to upper limit</div></div>
+  </div>
+
+  <div class="sect-tag">Supporting definitions</div>
+  <div class="cards">
+
+    <!-- control limits -->
+    <div class="acard cl">
+      <div class="at">◆ Control limits</div>
+      <div class="asub">train-only · healthy baseline</div>
+      <div class="formula"><span class="g">low</span> = μ − 3σ<br><span class="g">high</span> = μ + 3σ<br><span style="color:var(--grey-3)">μ,σ over train rows, <b style="color:var(--ink-soft)">Time &lt; 30</b></span></div>
+      <div class="note">Fitted <b>only on train</b> healthy data, never on val/test. Feeds two things: features <b>f6, f7</b> above, and the <b>alarm rule</b> used by every prognosis metric →</div>
+    </div>
+
+    <!-- two-phase -->
+    <div class="acard ph">
+      <div class="at">◆ Two-phase gate</div>
+      <div class="asub">fit ⇄ infer · same weights</div>
+      <div class="twocol">
+        <div class="mini fit">
+          <div class="mh">Fit · val Run 8</div>
+          <div class="kv">loss = <b>MSE</b>(fused, y)<br>Adam <b>lr 1e-3</b><br>wd <b>1e-4</b><br><b>500</b> epochs<br>seed <b>42</b>, hidden <b>32</b></div>
+        </div>
+        <div class="mini inf">
+          <div class="mh">Infer · test 9–10</div>
+          <div class="kv">gate frozen<br>w = gate(ctx)<br>per-window +<br>per-step weights<br>save w · gate.pt</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- metrics -->
+    <div class="acard mx">
+      <div class="at">◆ Evaluation metrics</div>
+      <div class="asub">alarm ⇔ any step ∉ [low, high]</div>
+      <div class="metriclist">
+        <div class="m"><span class="mk hi">MSE · MAE</span><span>forecast error over H</span></div>
+        <div class="m"><span class="mk">event_recall</span><span>runs with a correct pre-onset alarm</span></div>
+        <div class="m"><span class="mk">lead_time_h</span><span>how early, before onset (30 h)</span></div>
+        <div class="m"><span class="mk">pre_onset_FA</span><span>false alarms before onset</span></div>
+        <div class="m"><span class="mk">window P/R</span><span>tp·fp·tn·fn per window</span></div>
+      </div>
+      <div class="note" style="margin-top:8px">Scored for <b>diff · raw · time_moe · sundial · gate</b> + <b>10 baselines</b> (5 DL × raw/diff, not fused).</div>
+    </div>
+  </div>
+
+  <footer>
+    <div><b>Line-level source —</b> <span class="files"><span>fuse_gate_multi.py</span> (GateMLPMulti L20–33 · fuse L36–39 · train loop L118–129 · write-back L131–133) &nbsp;·&nbsp; <span>common/expert_io.py</span> (context_features L110–131 · control_limits L98–107) &nbsp;·&nbsp; <span>few_shot/TEP_IDV13/evaluate.py</span> (prognosis_metrics L47–113)</span></div>
+    <div style="margin-top:6px">Shapes, layer dims, hyper-parameters, feature formulas and metric names are transcribed directly from these lines.</div>
+  </footer>
+</div>
+</body>
+</html>

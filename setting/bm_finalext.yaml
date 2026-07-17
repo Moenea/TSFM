@@ -1,0 +1,25 @@
+params:
+  target: XMEAS10 Purge Rate
+  limit_csv_path: /home/aicode/sherwin/TSFM/setting/limits_tep_xmeas10_mag25.csv
+  data_root: /home/aicode/sherwin/dataset/TEP/csv_5var_lowmag
+  results_root: ./results
+  seq_len: 96
+  pred_len: 96
+  eval_steps: 15
+  input_clean_steps: 30
+  alarm_quality_rmse_factor: 0.2
+test:
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run18.csv
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run19.csv
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run20.csv
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run21.csv
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run22.csv
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run23.csv
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run24.csv
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run25.csv
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run26.csv
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run27.csv
+model_dirs:
+- {name: Gate-expA, result_dir: ensemble_Gate_expA_XMEAS10_testext}
+- {name: Gate-expB, result_dir: ensemble_Gate_expB_XMEAS10_testext}
+- {name: Gate-alarm, result_dir: ensemble_Gate_alarm_XMEAS10_testext}

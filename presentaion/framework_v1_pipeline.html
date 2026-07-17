@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XMEAS10 Gate Fusion · Overall Framework — V1 Dataflow Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ffffff; --panel:#fafafa; --ink:#0b0b0c; --ink-soft:#37373b;
+    --grey-1:#f4f4f2; --grey-2:#e6e6e2; --grey-3:#6c6c6c; --grey-4:#9a9a97;
+    --accent:#002FA7; --accent-rgb:0,47,167; --accent-bright:#3f5fd6; --accent-soft:#eef1fb;
+    --line:#e2e2df; --line-2:#cfcfca;
+    --amber:#8a5a00; --amber-soft:#fbf3e3;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  body{
+    background:var(--paper);color:var(--ink);font-family:var(--sans);
+    line-height:1.5;padding:44px clamp(18px,4vw,64px) 72px;
+    background-image:radial-gradient(var(--line) 0.9px,transparent 0.9px);
+    background-size:26px 26px;background-position:-1px -1px;
+  }
+  .wrap{max-width:1520px;margin:0 auto}
+
+  /* ---------- header ---------- */
+  header{margin-bottom:38px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--accent);font-weight:600;display:flex;align-items:center;gap:12px}
+  .eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+  h1{font-size:clamp(28px,3.6vw,46px);font-weight:800;letter-spacing:-.022em;line-height:1.04;margin:16px 0 10px}
+  h1 .b{color:var(--accent)}
+  .thesis{font-size:clamp(15px,1.5vw,18px);color:var(--ink-soft);max-width:66ch;font-weight:400}
+  .equation{font-family:var(--mono);font-size:clamp(14px,1.6vw,19px);font-weight:600;margin-top:18px;padding:14px 20px;background:var(--ink);color:#fff;display:inline-flex;gap:2px;flex-wrap:wrap;border-radius:2px}
+  .equation .k{color:#8fa8ff}
+  .metastrip{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+  .chip{font-family:var(--mono);font-size:12px;letter-spacing:.02em;padding:6px 11px;border:1px solid var(--line-2);border-radius:999px;color:var(--ink-soft);background:#fff;white-space:nowrap}
+  .chip b{color:var(--accent);font-weight:700}
+
+  /* ---------- pipeline ---------- */
+  .pipe{display:flex;align-items:stretch;gap:0;margin-top:14px}
+  .stage{flex:1 1 0;min-width:0;display:flex;flex-direction:column}
+  .stage-hd{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;min-height:44px}
+  .stage-no{font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--accent);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:none}
+  .stage-ttl{font-size:14px;font-weight:800;letter-spacing:.02em;text-transform:uppercase}
+  .stage-sub{font-family:var(--mono);font-size:11px;color:var(--grey-3);letter-spacing:.04em}
+  .body{flex:1;display:flex;flex-direction:column;gap:12px}
+
+  /* connector rails between stages */
+  .rail{flex:0 0 46px;position:relative;align-self:stretch;display:grid;place-items:center}
+  .rail svg{width:100%;height:100%}
+  .rail .cap{position:absolute;top:calc(50% - 30px);left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--grey-3);background:var(--paper);padding:2px 5px;white-space:nowrap;text-transform:uppercase}
+
+  /* generic card */
+  .card{border:1.5px solid var(--line-2);border-radius:6px;background:#fff;padding:14px 15px;position:relative}
+  .card .ct{font-size:13.5px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+  .card .ck{font-family:var(--mono);font-size:11px;color:var(--grey-3);margin-top:5px;line-height:1.55}
+  .card .ck b{color:var(--ink-soft);font-weight:600}
+  .tag{font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.06em;padding:2px 6px;border-radius:3px;text-transform:uppercase}
+  .tag.adapt{color:var(--accent);background:var(--accent-soft)}
+  .tag.zero{color:var(--amber);background:var(--amber-soft)}
+  .tag.base{color:#fff;background:var(--accent)}
+
+  /* input stage specifics */
+  .win{border:1.5px solid var(--line-2);border-radius:6px;overflow:hidden}
+  .win-hd{background:var(--grey-1);padding:9px 13px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.03em;display:flex;justify-content:space-between;color:var(--ink-soft);border-bottom:1px solid var(--line)}
+  .varlist{padding:11px 13px;display:flex;flex-direction:column;gap:6px}
+  .var{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12px}
+  .var .dot{width:8px;height:8px;border-radius:2px;background:var(--grey-4);flex:none}
+  .var.tgt .dot{background:var(--accent)}
+  .var.tgt{font-weight:700;color:var(--accent)}
+  .var .role{margin-left:auto;font-size:10px;color:var(--grey-4);letter-spacing:.03em}
+  .split{border:1px dashed var(--line-2);border-radius:6px;padding:11px 13px;background:var(--panel)}
+  .split .sh{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-3);margin-bottom:9px}
+  .split-row{display:flex;gap:6px}
+  .sp{flex:1;text-align:center;font-family:var(--mono);font-size:10.5px;padding:7px 3px;border-radius:4px;line-height:1.35}
+  .sp b{display:block;font-size:12px;font-weight:700}
+  .sp.tr{background:var(--grey-1);color:var(--ink-soft)}
+  .sp.va{background:var(--accent-soft);color:var(--accent);font-weight:600}
+  .sp.te{background:#fff;border:1px solid var(--line-2);color:var(--ink-soft)}
+
+  /* experts group */
+  .experts{display:flex;flex-direction:column;gap:10px}
+  .grp-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-3);display:flex;align-items:center;gap:8px;margin:2px 0 -2px}
+  .grp-lbl::before{content:"";width:12px;height:2px;background:currentColor;flex:none}
+  .card.exp{padding:11px 13px}
+  .card.exp.adapt{border-left:4px solid var(--accent)}
+  .card.exp.zero{border-left:4px solid var(--amber)}
+  .out-shape{font-family:var(--mono);font-size:10px;color:var(--grey-4);margin-top:7px;padding-top:7px;border-top:1px dashed var(--line)}
+  .out-shape b{color:var(--accent)}
+  .contract{font-family:var(--mono);font-size:10.5px;color:var(--grey-3);text-align:center;padding:9px;border:1px dashed var(--line-2);border-radius:6px;background:var(--panel);line-height:1.5}
+  .contract b{color:var(--ink-soft)}
+
+  /* gate hero */
+  .gate{background:var(--accent);color:#fff;border-radius:8px;padding:16px 16px 18px;box-shadow:0 12px 34px -14px rgba(var(--accent-rgb),.6);display:flex;flex-direction:column;gap:12px}
+  .gate .gh{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#c3d0ff}
+  .gate .gt{font-size:15px;font-weight:800;letter-spacing:-.01em;line-height:1.2}
+  .feats{display:flex;flex-wrap:wrap;gap:5px}
+  .feat{font-family:var(--mono);font-size:10px;padding:3px 7px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:4px;color:#eaf0ff}
+  .mlp{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:11px 12px;font-family:var(--mono);font-size:11px;color:#eaf0ff;line-height:1.65}
+  .mlp .a{color:#fff;font-weight:700}
+  .weights{display:flex;gap:4px;align-items:flex-end;height:52px;padding:8px 4px 0;background:rgba(0,0,0,.16);border-radius:6px}
+  .wcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:flex-end;height:100%}
+  .wbar{width:70%;background:linear-gradient(#fff,#b9c8ff);border-radius:2px 2px 0 0}
+  .wcol span{font-family:var(--mono);font-size:8.5px;color:#c3d0ff;white-space:nowrap}
+  .gnote{font-family:var(--mono);font-size:10px;color:#c3d0ff;line-height:1.55}
+  .gnote b{color:#fff}
+
+  /* eval stage */
+  .fused{border:2px solid var(--accent);border-radius:6px;padding:12px 13px;background:var(--accent-soft)}
+  .fused .ft{font-size:13px;font-weight:800;color:var(--accent);display:flex;align-items:center;gap:8px}
+  .fused .fk{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);margin-top:5px;line-height:1.5}
+  .metrics{border:1.5px solid var(--line-2);border-radius:6px;overflow:hidden}
+  .mrow{padding:10px 13px;border-bottom:1px solid var(--line)}
+  .mrow:last-child{border-bottom:0}
+  .mrow .ml{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-3);margin-bottom:5px}
+  .mtags{display:flex;flex-wrap:wrap;gap:5px}
+  .mt{font-family:var(--mono);font-size:10.5px;padding:3px 7px;border-radius:4px;background:var(--grey-1);color:var(--ink-soft)}
+  .mt.hi{background:var(--ink);color:#fff}
+  .base-note{font-family:var(--mono);font-size:10px;color:var(--grey-3);line-height:1.5;padding:10px 13px;background:var(--panel);border:1px dashed var(--line-2);border-radius:6px}
+  .base-note b{color:var(--ink-soft)}
+  .curve{border:1.5px solid var(--line-2);border-radius:6px;padding:11px 13px}
+  .curve .cl{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-3);margin-bottom:8px}
+
+  /* legend + footer */
+  .legend{display:flex;flex-wrap:wrap;gap:20px;margin-top:40px;padding-top:20px;border-top:2px solid var(--ink)}
+  .lg{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-soft)}
+  .sw{width:20px;height:12px;border-radius:3px;flex:none}
+  .sw.adapt{background:var(--accent-soft);border-left:4px solid var(--accent)}
+  .sw.zero{background:var(--amber-soft);border-left:4px solid var(--amber)}
+  .sw.gate{background:var(--accent)}
+  .sw.base{background:var(--accent)}
+  footer{margin-top:26px;font-family:var(--mono);font-size:11px;color:var(--grey-4);line-height:1.7}
+  footer b{color:var(--grey-3)}
+  footer .files span{color:var(--accent)}
+
+  /* entrance */
+  @media (prefers-reduced-motion:no-preference){
+    .stage,.rail{opacity:0;transform:translateY(10px);animation:rise .6s cubic-bezier(.2,.7,.3,1) forwards}
+    .stage:nth-child(1){animation-delay:.05s}.rail:nth-child(2){animation-delay:.16s}
+    .stage:nth-child(3){animation-delay:.24s}.rail:nth-child(4){animation-delay:.36s}
+    .stage:nth-child(5){animation-delay:.44s}.rail:nth-child(6){animation-delay:.56s}
+    .stage:nth-child(7){animation-delay:.64s}
+    @keyframes rise{to{opacity:1;transform:none}}
+  }
+  /* responsive: stack pipeline vertically */
+  @media (max-width:1080px){
+    .pipe{flex-direction:column}
+    .rail{flex:0 0 40px;width:100%}
+    .rail svg{transform:rotate(90deg)}
+    .rail .cap{top:auto;bottom:2px}
+    .stage{width:100%}
+  }
+  @media print{
+    body{padding:0;background:#fff}
+    .stage,.rail{opacity:1!important;transform:none!important;animation:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Heterogeneous-TSFM Fusion &nbsp;·&nbsp; Overall Framework &nbsp;·&nbsp; V1 Dataflow</div>
+    <h1>A <span class="b">context-gated</span> fusion of four heterogeneous forecasters<br>for early fault prognosis on <span class="b">XMEAS10</span></h1>
+    <p class="thesis">Four experts each forecast the Purge&nbsp;Rate over a 15-step horizon; a small MLP reads only the <em>context</em> of the signal and emits per-step softmax weights that blend them. The gate never sees the experts' predictions — it decides <em>whom to trust</em> from the state of the process alone.</p>
+    <div class="equation"><span class="k">ŷ</span>[b,h]&nbsp;=&nbsp;Σ<sub>n</sub>&nbsp;<span class="k">w</span><sub>n</sub>(context[b])[h]&nbsp;·&nbsp;<span class="k">p</span><sub>n</sub>[b,h]&nbsp;&nbsp;&nbsp;&nbsp;Σ<sub>n</sub>&nbsp;<span class="k">w</span><sub>n</sub>&nbsp;=&nbsp;1</div>
+    <div class="metastrip">
+      <span class="chip">Dataset&nbsp; <b>TEP</b> · fault IDV13</span>
+      <span class="chip">Target&nbsp; <b>XMEAS10</b> Purge Rate</span>
+      <span class="chip">Horizon&nbsp; <b>15</b> steps · 0.75 h</span>
+      <span class="chip">Context&nbsp; seq_len <b>96</b></span>
+      <span class="chip">Few-shot ratio&nbsp; <b>r ∈ {0.01 … 1.0}</b></span>
+      <span class="chip">Experts&nbsp; <b>N = 4</b></span>
+    </div>
+  </header>
+
+  <div class="pipe">
+
+    <!-- STAGE 1 : INPUT -->
+    <section class="stage">
+      <div class="stage-hd">
+        <span class="stage-no">1</span>
+        <div><div class="stage-ttl">Input</div><div class="stage-sub">window &amp; splits</div></div>
+      </div>
+      <div class="body">
+        <div class="win">
+          <div class="win-hd"><span>context window</span><span>96 × 5 → XMEAS10</span></div>
+          <div class="varlist">
+            <div class="var tgt"><span class="dot"></span>XMEAS10<span class="role">target</span></div>
+            <div class="var"><span class="dot"></span>XMEAS15<span class="role">covar</span></div>
+            <div class="var"><span class="dot"></span>XMEAS17<span class="role">covar</span></div>
+            <div class="var"><span class="dot"></span>XMV06<span class="role">covar</span></div>
+            <div class="var"><span class="dot"></span>XMV11<span class="role">covar</span></div>
+          </div>
+        </div>
+        <div class="split">
+          <div class="sh">TEP runs → splits</div>
+          <div class="split-row">
+            <div class="sp tr"><b>1–7</b>train · subset r</div>
+            <div class="sp va"><b>8</b>val · gate</div>
+            <div class="sp te"><b>9–10</b>test · eval</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="rail" aria-hidden="true">
+      <span class="cap">p̂ₙ</span>
+      <svg viewBox="0 0 46 100" preserveAspectRatio="none"><path d="M2 50 H40" stroke="#002FA7" stroke-width="1.4" fill="none" vector-effect="non-scaling-stroke"/><path d="M34 44 L42 50 L34 56" stroke="#002FA7" stroke-width="1.4" fill="none" vector-effect="non-scaling-stroke"/></svg>
+    </div>
+
+    <!-- STAGE 2 : EXPERTS -->
+    <section class="stage">
+      <div class="stage-hd">
+        <span class="stage-no">2</span>
+        <div><div class="stage-ttl">Experts · N = 4</div><div class="stage-sub">each → p<sub>n</sub> ∈ ℝ<sup>B×15</sup></div></div>
+      </div>
+      <div class="body experts">
+        <div class="grp-lbl">Adapted · multivariate (MS 5-var)</div>
+        <div class="card exp adapt">
+          <div class="ct">Timer-XL · diff <span class="tag base">base</span></div>
+          <div class="ck">first-difference input + <b>cumsum-restore</b> to raw · few-shot adapt from <b>checkpoint.pth</b> · e_layers 8, d_model 1024, lr 5e-6</div>
+        </div>
+        <div class="card exp adapt">
+          <div class="ct">Timer-XL · raw <span class="tag adapt">adapt</span></div>
+          <div class="ck">predicts XMEAS10 directly · same 5-var MS, <b>--covariate --last_token</b>, c_out 1 · same few-shot subset</div>
+        </div>
+        <div class="grp-lbl" style="margin-top:6px">Zero-shot · univariate (XMEAS10 only)</div>
+        <div class="card exp zero">
+          <div class="ct">Time-MoE <span class="tag zero">zero-shot</span></div>
+          <div class="ck">per-window instance-norm → <b>generate(15)</b> → denorm · ratio-independent, run once</div>
+        </div>
+        <div class="card exp zero">
+          <div class="ct">Sundial <span class="tag zero">zero-shot</span></div>
+          <div class="ck">flow-matching generative TSFM · point forecast = <b>mean of 20 draws</b></div>
+        </div>
+        <div class="contract">↓ all write the shared <b>alignment contract</b> (expert_io)<br>identical window order &amp; original units · true-match guard atol 1e-2</div>
+      </div>
+    </section>
+
+    <div class="rail" aria-hidden="true">
+      <span class="cap">N=4</span>
+      <svg viewBox="0 0 46 100" preserveAspectRatio="none">
+        <path d="M2 12 C 24 12, 22 50, 42 50" stroke="#002FA7" stroke-width="1.2" fill="none" vector-effect="non-scaling-stroke"/>
+        <path d="M2 38 C 24 38, 24 50, 42 50" stroke="#002FA7" stroke-width="1.2" fill="none" vector-effect="non-scaling-stroke"/>
+        <path d="M2 62 C 24 62, 24 50, 42 50" stroke="#002FA7" stroke-width="1.2" fill="none" vector-effect="non-scaling-stroke"/>
+        <path d="M2 88 C 24 88, 22 50, 42 50" stroke="#002FA7" stroke-width="1.2" fill="none" vector-effect="non-scaling-stroke"/>
+        <path d="M36 44 L44 50 L36 56" stroke="#002FA7" stroke-width="1.4" fill="none" vector-effect="non-scaling-stroke"/>
+      </svg>
+    </div>
+
+    <!-- STAGE 3 : GATE -->
+    <section class="stage">
+      <div class="stage-hd">
+        <span class="stage-no">3</span>
+        <div><div class="stage-ttl">Context-only Gate</div><div class="stage-sub">GateMLPMulti · softmax over N</div></div>
+      </div>
+      <div class="body">
+        <div class="gate">
+          <div class="gh">Input — context features (not expert preds)</div>
+          <div class="feats">
+            <span class="feat">last</span><span class="feat">Δlast</span><span class="feat">mean₉₆</span><span class="feat">std₉₆</span>
+            <span class="feat">slope</span><span class="feat">range₉₆</span><span class="feat">last−low</span><span class="feat">high−last</span>
+          </div>
+          <div class="gt">8 features of the XMEAS10 history →<br>per-step trust weights</div>
+          <div class="mlp"><span class="a">Linear</span> 8→32 · GELU<br><span class="a">Linear</span> 32→32 · GELU<br><span class="a">Linear</span> 32→(15×4) → view(B,15,4)<br>→ <span class="a">softmax</span> over experts</div>
+          <div class="weights" title="illustrative per-step weights">
+            <div class="wcol"><div class="wbar" style="height:64%"></div><span>diff</span></div>
+            <div class="wcol"><div class="wbar" style="height:40%"></div><span>raw</span></div>
+            <div class="wcol"><div class="wbar" style="height:78%"></div><span>moe</span></div>
+            <div class="wcol"><div class="wbar" style="height:30%"></div><span>sun</span></div>
+          </div>
+          <div class="gnote"><b>Trained on val (Run8)</b> — MSE(Σ wₙ·pₙ , y) · Adam lr 1e-3, 500 ep, seed 42<br><b>Applied to test (Run9–10)</b> — weights vary per window &amp; per horizon step</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="rail" aria-hidden="true">
+      <span class="cap">Σ</span>
+      <svg viewBox="0 0 46 100" preserveAspectRatio="none"><path d="M2 50 H40" stroke="#002FA7" stroke-width="1.4" fill="none" vector-effect="non-scaling-stroke"/><path d="M34 44 L42 50 L34 56" stroke="#002FA7" stroke-width="1.4" fill="none" vector-effect="non-scaling-stroke"/></svg>
+    </div>
+
+    <!-- STAGE 4 : OUTPUT + EVAL -->
+    <section class="stage">
+      <div class="stage-hd">
+        <span class="stage-no">4</span>
+        <div><div class="stage-ttl">Fuse &amp; Evaluate</div><div class="stage-sub">test · Run 9–10</div></div>
+      </div>
+      <div class="body">
+        <div class="fused">
+          <div class="ft">▸ Gate forecast ŷ</div>
+          <div class="fk">weighted sum over N experts; first 15 steps replace the base expert's window · saved with weights.npy + gate.pt</div>
+        </div>
+        <div class="metrics">
+          <div class="mrow">
+            <div class="ml">Forecast accuracy</div>
+            <div class="mtags"><span class="mt hi">MSE</span><span class="mt">MAE</span><span class="mt">over horizon 15</span></div>
+          </div>
+          <div class="mrow">
+            <div class="ml">Prognosis · control-limit alarm</div>
+            <div class="mtags"><span class="mt hi">event_recall</span><span class="mt">lead-time h</span><span class="mt">pre-onset FA</span><span class="mt">window P / R</span></div>
+          </div>
+        </div>
+        <div class="base-note"><b>Reference band:</b> control limits low/high = μ ± 3σ from <b>healthy train data</b> (Time&lt;30) — train-only. Alarm ⇔ ŷ crosses [low,high] anywhere in the horizon.</div>
+        <div class="base-note">+ <b>10 DL baselines</b> (CNNLSTM · DiPCALSTM · LSTMGRU · STAConvBiLSTM · TCNTransformer, each raw &amp; diff) evaluated <b>alongside</b> — never fused.</div>
+        <div class="curve">
+          <div class="cl">aggregate over 7 ratios</div>
+          <svg viewBox="0 0 200 74" style="width:100%;height:auto">
+            <line x1="20" y1="8" x2="20" y2="62" stroke="#cfcfca" stroke-width="1"/>
+            <line x1="20" y1="62" x2="192" y2="62" stroke="#cfcfca" stroke-width="1"/>
+            <polyline points="20,52 48,44 82,34 120,26 160,20 188,17" fill="none" stroke="#002FA7" stroke-width="2.2"/>
+            <polyline points="20,58 48,54 82,50 120,47 160,45 188,44" fill="none" stroke="#9a9a97" stroke-width="1.6" stroke-dasharray="3 3"/>
+            <text x="26" y="16" font-family="JetBrains Mono" font-size="8" fill="#002FA7">gate</text>
+            <text x="150" y="40" font-family="JetBrains Mono" font-size="7.5" fill="#9a9a97">baselines</text>
+            <text x="96" y="72" font-family="JetBrains Mono" font-size="7.5" fill="#6c6c6c" text-anchor="middle">few-shot ratio →</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="legend">
+    <div class="lg"><span class="sw adapt"></span>Timer-XL expert · adapted · multivariate MS 5-var</div>
+    <div class="lg"><span class="sw zero"></span>Foundation-model expert · zero-shot · univariate</div>
+    <div class="lg"><span class="sw gate"></span>Context-only softmax gate (the learned part)</div>
+    <div class="lg"><span class="sw base"></span>diff = base expert (its full window carries the fused head)</div>
+  </div>
+
+  <footer>
+    <div><b>Source of truth —</b> <span class="files"><span>fuse_gate_multi.py</span> (GateMLPMulti · fuse · einsum "bhn,nbh→bh") &nbsp;·&nbsp; <span>common/expert_io.py</span> (context_features · control_limits · save_result) &nbsp;·&nbsp; <span>evaluate_multi.py</span> + few_shot/evaluate.py (metrics) &nbsp;·&nbsp; <span>xmeas10/run_gate_eval.sh</span> (orchestration)</span></div>
+    <div style="margin-top:6px">Every label above is drawn from these files — expert set, feature list, MLP shape, split roles, and metric names are code-exact.</div>
+  </footer>
+</div>
+</body>
+</html>

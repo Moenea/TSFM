@@ -1,0 +1,52 @@
+params:
+  target: XMEAS10 Purge Rate
+  limit_csv_path: /home/aicode/sherwin/TSFM/setting/limits_tep_xmeas10_mag25.csv
+  data_root: /home/aicode/sherwin/dataset/TEP/csv_5var_lowmag
+  results_root: ./results
+  seq_len: 96
+  pred_len: 96
+  eval_steps: 15
+  input_clean_steps: 30
+  alarm_quality_rmse_factor: 0.2
+test:
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run9.csv
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run10.csv
+model_dirs:
+- name: g_0
+  result_dir: sweep_p0/g_0
+- name: g_1
+  result_dir: sweep_p0/g_1
+- name: g_2
+  result_dir: sweep_p0/g_2
+- name: g_3
+  result_dir: sweep_p0/g_3
+- name: g_4
+  result_dir: sweep_p0/g_4
+- name: g_5
+  result_dir: sweep_p0/g_5
+- name: g_6
+  result_dir: sweep_p0/g_6
+- name: g_7
+  result_dir: sweep_p0/g_7
+- name: g_8
+  result_dir: sweep_p0/g_8
+- name: g_9
+  result_dir: sweep_p0/g_9
+- name: g_10
+  result_dir: sweep_p0/g_10
+- name: g_11
+  result_dir: sweep_p0/g_11
+- name: g_12
+  result_dir: sweep_p0/g_12
+- name: g_13
+  result_dir: sweep_p0/g_13
+- name: g_14
+  result_dir: sweep_p0/g_14
+- name: g_15
+  result_dir: sweep_p0/g_15
+- name: g_16
+  result_dir: sweep_p0/g_16
+- name: g_17
+  result_dir: sweep_p0/g_17
+- name: Gate-expA
+  result_dir: ensemble_Gate_XMEAS10_mag25_test

@@ -1,0 +1,17 @@
+params:
+  target: XMEAS10 Purge Rate
+  limit_csv_path: /home/aicode/sherwin/TSFM/setting/limits_tep_xmeas10_mag25.csv
+  data_root: /home/aicode/sherwin/dataset/TEP/csv_5var_lowmag
+  results_root: ./results
+  seq_len: 96
+  pred_len: 96
+  eval_steps: 15
+  input_clean_steps: 30
+  alarm_quality_rmse_factor: 0.2
+test:
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run9.csv
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run10.csv
+model_dirs:
+- {name: Gate-expA, result_dir: ensemble_Gate_XMEAS10_mag25_test}
+- {name: Gate-expB, result_dir: ensemble_Gate_XMEAS10_train25_test}
+- {name: Gate-alarm, result_dir: ensemble_Gate_alarm_XMEAS10_test}
