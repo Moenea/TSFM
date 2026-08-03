@@ -1,0 +1,80 @@
+params:
+  target: XMEAS10 Purge Rate
+  limit_csv_path: /home/aicode/sherwin/TSFM/setting/limits_tep_xmeas10_mag25.csv
+  data_root: /home/aicode/sherwin/dataset/TEP/csv_5var_lowmag
+  results_root: ./results
+  seq_len: 96
+  pred_len: 96
+  eval_steps: 5
+  input_clean_steps: 10   # C in the paper: 10 samples = 30 min pre-origin clean window
+  alarm_quality_rmse_factor: 0.2
+test:
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run9.csv
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run10.csv
+model_dirs:
+- {name: 'raw||r0p01', result_dir: 'forecast_TEP_IDV13_XMEAS10_5var_raw_train25p5_r0p01_timer_xl_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0'}
+- {name: 'diff||r0p01', result_dir: 'op_diff_p5_r0p01_test'}
+- {name: 'diff2||r0p01', result_dir: 'op_diff2_p5_r0p01_test'}
+- {name: 'union||r0p01', result_dir: 'op_union_r0p01_test'}
+- {name: 'Time-MoE||r0p01', result_dir: 'fm_time_moe_xmeas10_mag25_test'}
+- {name: 'Sundial||r0p01', result_dir: 'fm_sundial_xmeas10_mag25_test'}
+- {name: 'CNNLSTM||r0p01', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_CNNLSTM_train25_r0p01_CNNLSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm230_dff1408_nh8_cosTrue_CNNLSTM-X10-diff_0'}
+- {name: 'DiPCALSTM||r0p01', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_DiPCALSTM_train25_r0p01_DiPCALSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm472_dff2048_nh8_cosTrue_DiPCALSTM-X10-diff_0'}
+- {name: 'LSTMGRU||r0p01', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_LSTMGRU_train25_r0p01_LSTMGRU_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el1_dm316_dff2048_nh8_cosTrue_LSTMGRU-X10-diff_0'}
+- {name: 'STAConvBiLSTM||r0p01', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_STAConvBiLSTM_train25_r0p01_STAConvBiLSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el1_dm268_dff2048_nh8_cosTrue_STAConvBiLSTM-X10-diff_0'}
+- {name: 'TCNTransformer||r0p01', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_TCNTransformer_train25_r0p01_TCNTransformer_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm128_dff512_nh8_cosTrue_TCNTransformer-X10-diff_0'}
+- {name: 'raw||r0p05', result_dir: 'forecast_TEP_IDV13_XMEAS10_5var_raw_train25p5_r0p05_timer_xl_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0'}
+- {name: 'diff||r0p05', result_dir: 'op_diff_p5_r0p05_test'}
+- {name: 'diff2||r0p05', result_dir: 'op_diff2_p5_r0p05_test'}
+- {name: 'union||r0p05', result_dir: 'op_union_r0p05_test'}
+- {name: 'Time-MoE||r0p05', result_dir: 'fm_time_moe_xmeas10_mag25_test'}
+- {name: 'Sundial||r0p05', result_dir: 'fm_sundial_xmeas10_mag25_test'}
+- {name: 'CNNLSTM||r0p05', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_CNNLSTM_train25_r0p05_CNNLSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm230_dff1408_nh8_cosTrue_CNNLSTM-X10-diff_0'}
+- {name: 'DiPCALSTM||r0p05', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_DiPCALSTM_train25_r0p05_DiPCALSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm472_dff2048_nh8_cosTrue_DiPCALSTM-X10-diff_0'}
+- {name: 'LSTMGRU||r0p05', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_LSTMGRU_train25_r0p05_LSTMGRU_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el1_dm316_dff2048_nh8_cosTrue_LSTMGRU-X10-diff_0'}
+- {name: 'STAConvBiLSTM||r0p05', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_STAConvBiLSTM_train25_r0p05_STAConvBiLSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el1_dm268_dff2048_nh8_cosTrue_STAConvBiLSTM-X10-diff_0'}
+- {name: 'TCNTransformer||r0p05', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_TCNTransformer_train25_r0p05_TCNTransformer_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm128_dff512_nh8_cosTrue_TCNTransformer-X10-diff_0'}
+- {name: 'raw||r0p1', result_dir: 'forecast_TEP_IDV13_XMEAS10_5var_raw_train25p5_r0p1_timer_xl_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0'}
+- {name: 'diff||r0p1', result_dir: 'op_diff_p5_r0p1_test'}
+- {name: 'diff2||r0p1', result_dir: 'op_diff2_p5_r0p1_test'}
+- {name: 'union||r0p1', result_dir: 'op_union_r0p1_test'}
+- {name: 'Time-MoE||r0p1', result_dir: 'fm_time_moe_xmeas10_mag25_test'}
+- {name: 'Sundial||r0p1', result_dir: 'fm_sundial_xmeas10_mag25_test'}
+- {name: 'CNNLSTM||r0p1', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_CNNLSTM_train25_r0p1_CNNLSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm230_dff1408_nh8_cosTrue_CNNLSTM-X10-diff_0'}
+- {name: 'DiPCALSTM||r0p1', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_DiPCALSTM_train25_r0p1_DiPCALSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm472_dff2048_nh8_cosTrue_DiPCALSTM-X10-diff_0'}
+- {name: 'LSTMGRU||r0p1', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_LSTMGRU_train25_r0p1_LSTMGRU_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el1_dm316_dff2048_nh8_cosTrue_LSTMGRU-X10-diff_0'}
+- {name: 'STAConvBiLSTM||r0p1', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_STAConvBiLSTM_train25_r0p1_STAConvBiLSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el1_dm268_dff2048_nh8_cosTrue_STAConvBiLSTM-X10-diff_0'}
+- {name: 'TCNTransformer||r0p1', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_TCNTransformer_train25_r0p1_TCNTransformer_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm128_dff512_nh8_cosTrue_TCNTransformer-X10-diff_0'}
+- {name: 'raw||r0p25', result_dir: 'forecast_TEP_IDV13_XMEAS10_5var_raw_train25p5_r0p25_timer_xl_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0'}
+- {name: 'diff||r0p25', result_dir: 'op_diff_p5_r0p25_test'}
+- {name: 'diff2||r0p25', result_dir: 'op_diff2_p5_r0p25_test'}
+- {name: 'union||r0p25', result_dir: 'op_union_r0p25_test'}
+- {name: 'Time-MoE||r0p25', result_dir: 'fm_time_moe_xmeas10_mag25_test'}
+- {name: 'Sundial||r0p25', result_dir: 'fm_sundial_xmeas10_mag25_test'}
+- {name: 'CNNLSTM||r0p25', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_CNNLSTM_train25_r0p25_CNNLSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm230_dff1408_nh8_cosTrue_CNNLSTM-X10-diff_0'}
+- {name: 'DiPCALSTM||r0p25', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_DiPCALSTM_train25_r0p25_DiPCALSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm472_dff2048_nh8_cosTrue_DiPCALSTM-X10-diff_0'}
+- {name: 'LSTMGRU||r0p25', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_LSTMGRU_train25_r0p25_LSTMGRU_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el1_dm316_dff2048_nh8_cosTrue_LSTMGRU-X10-diff_0'}
+- {name: 'STAConvBiLSTM||r0p25', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_STAConvBiLSTM_train25_r0p25_STAConvBiLSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el1_dm268_dff2048_nh8_cosTrue_STAConvBiLSTM-X10-diff_0'}
+- {name: 'TCNTransformer||r0p25', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_TCNTransformer_train25_r0p25_TCNTransformer_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm128_dff512_nh8_cosTrue_TCNTransformer-X10-diff_0'}
+- {name: 'raw||r0p5', result_dir: 'forecast_TEP_IDV13_XMEAS10_5var_raw_train25p5_r0p5_timer_xl_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0'}
+- {name: 'diff||r0p5', result_dir: 'op_diff_p5_r0p5_test'}
+- {name: 'diff2||r0p5', result_dir: 'op_diff2_p5_r0p5_test'}
+- {name: 'union||r0p5', result_dir: 'op_union_r0p5_test'}
+- {name: 'Time-MoE||r0p5', result_dir: 'fm_time_moe_xmeas10_mag25_test'}
+- {name: 'Sundial||r0p5', result_dir: 'fm_sundial_xmeas10_mag25_test'}
+- {name: 'CNNLSTM||r0p5', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_CNNLSTM_train25_r0p5_CNNLSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm230_dff1408_nh8_cosTrue_CNNLSTM-X10-diff_0'}
+- {name: 'DiPCALSTM||r0p5', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_DiPCALSTM_train25_r0p5_DiPCALSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm472_dff2048_nh8_cosTrue_DiPCALSTM-X10-diff_0'}
+- {name: 'LSTMGRU||r0p5', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_LSTMGRU_train25_r0p5_LSTMGRU_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el1_dm316_dff2048_nh8_cosTrue_LSTMGRU-X10-diff_0'}
+- {name: 'STAConvBiLSTM||r0p5', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_STAConvBiLSTM_train25_r0p5_STAConvBiLSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el1_dm268_dff2048_nh8_cosTrue_STAConvBiLSTM-X10-diff_0'}
+- {name: 'TCNTransformer||r0p5', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_TCNTransformer_train25_r0p5_TCNTransformer_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm128_dff512_nh8_cosTrue_TCNTransformer-X10-diff_0'}
+- {name: 'raw||r1p0', result_dir: 'forecast_TEP_IDV13_XMEAS10_5var_raw_train25p5_few_r1p0_timer_xl_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0'}
+- {name: 'diff||r1p0', result_dir: 'forecast_TEP_IDV13_XMEAS10_5var_diff_train25p5_few_r1p0_timer_xl_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0'}
+- {name: 'diff2||r1p0', result_dir: 'op_diff2_p5_test'}
+- {name: 'union||r1p0', result_dir: 'op_union_diff_diff2_test'}
+- {name: 'Time-MoE||r1p0', result_dir: 'fm_time_moe_xmeas10_mag25_test'}
+- {name: 'Sundial||r1p0', result_dir: 'fm_sundial_xmeas10_mag25_test'}
+- {name: 'CNNLSTM||r1p0', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_CNNLSTM_train25_r1p0_CNNLSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm230_dff1408_nh8_cosTrue_CNNLSTM-X10-diff_0'}
+- {name: 'DiPCALSTM||r1p0', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_DiPCALSTM_train25_r1p0_DiPCALSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm472_dff2048_nh8_cosTrue_DiPCALSTM-X10-diff_0'}
+- {name: 'LSTMGRU||r1p0', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_LSTMGRU_train25_r1p0_LSTMGRU_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el1_dm316_dff2048_nh8_cosTrue_LSTMGRU-X10-diff_0'}
+- {name: 'STAConvBiLSTM||r1p0', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_STAConvBiLSTM_train25_r1p0_STAConvBiLSTM_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el1_dm268_dff2048_nh8_cosTrue_STAConvBiLSTM-X10-diff_0'}
+- {name: 'TCNTransformer||r1p0', result_dir: 'long_term_forecast_TEP_IDV13_XMEAS10_5var_diff_TCNTransformer_train25_r1p0_TCNTransformer_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr0.001_bt128_wd0_el2_dm128_dff512_nh8_cosTrue_TCNTransformer-X10-diff_0'}
