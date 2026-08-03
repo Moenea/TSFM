@@ -1,0 +1,19 @@
+params:
+  target: XMEAS10 Purge Rate
+  limit_csv_path: /home/aicode/sherwin/TSFM/setting/limits_tep_xmeas10_mag25.csv
+  data_root: /home/aicode/sherwin/dataset/TEP/csv_5var_lowmag
+  results_root: ./results
+  seq_len: 96
+  pred_len: 96
+  eval_steps: 5
+  input_clean_steps: 30
+  alarm_quality_rmse_factor: 0.2
+test:
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run9.csv
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run10.csv
+model_dirs:
+- {name: diff-P5, result_dir: forecast_TEP_IDV13_XMEAS10_5var_diff_train25p5_few_r1p0_timer_xl_MultivariateDatasetYAMLSplitFewShot_sl96_it96_ot96_lr5e-06_bt32_wd0_el8_dm1024_dff2048_nh8_cosTrue_test_0}
+- {name: diff2-P5, result_dir: op_diff2_p5_test}
+- {name: Gate-diff+diff2, result_dir: ensemble_Gate_diff_diff2_test}
+- {name: Gate-5expert, result_dir: ensemble_Gate_diffdiff2_5_test}
+- {name: Multiview, result_dir: op_multiview_p5_test}
