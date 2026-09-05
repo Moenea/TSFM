@@ -1,0 +1,46 @@
+params:
+  target: XMEAS10 Purge Rate
+  limit_csv_path: /home/aicode/sherwin/TSFM/setting/limits_tep_xmeas10_mag25.csv
+  data_root: /home/aicode/sherwin/dataset/TEP/csv_5var_lowmag
+  results_root: ./results
+  seq_len: 96
+  pred_len: 96
+  eval_steps: 5
+  input_clean_steps: 30
+  alarm_quality_rmse_factor: 0.2
+test:
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run9.csv
+- Mode1_SingleFault_SimulationCompleted_IDV13_Mode1_IDVInfo_13_25_Run10.csv
+model_dirs:
+- {name: Union-r0p01, result_dir: op_union_r0p01_test}
+- {name: Gate-alarm-r0p01, result_dir: ensemble_Gate_alarm_diffdiff2_r0p01_test}
+- {name: Union-r0p05, result_dir: op_union_r0p05_test}
+- {name: Gate-alarm-r0p05, result_dir: ensemble_Gate_alarm_diffdiff2_r0p05_test}
+- {name: Union-r0p1, result_dir: op_union_r0p1_test}
+- {name: Gate-alarm-r0p1, result_dir: ensemble_Gate_alarm_diffdiff2_r0p1_test}
+- {name: Union-r0p25, result_dir: op_union_r0p25_test}
+- {name: Gate-alarm-r0p25, result_dir: ensemble_Gate_alarm_diffdiff2_r0p25_test}
+- {name: Union-r0p5, result_dir: op_union_r0p5_test}
+- {name: Gate-alarm-r0p5, result_dir: ensemble_Gate_alarm_diffdiff2_r0p5_test}
+- {name: Union-r1p0, result_dir: op_union_diff_diff2_test}
+- {name: Gate-alarm-r1p0, result_dir: ensemble_Gate_alarm_diffdiff2_r1p0_test}
+- {name: Gate-hard-r0p01, result_dir: ensemble_Gate_alarm_hard_r0p01_test}
+- {name: Gate-hard-r0p05, result_dir: ensemble_Gate_alarm_hard_r0p05_test}
+- {name: Gate-hard-r0p1, result_dir: ensemble_Gate_alarm_hard_r0p1_test}
+- {name: Gate-hard-r0p25, result_dir: ensemble_Gate_alarm_hard_r0p25_test}
+- {name: Gate-hard-r0p5, result_dir: ensemble_Gate_alarm_hard_r0p5_test}
+- {name: Gate-hard-r1p0, result_dir: ensemble_Gate_alarm_hard_r1p0_test}
+- {name: Gate-predfeat-r1p0, result_dir: ensemble_Gate_alarm_predfeat_r1p0_test}
+- {name: Union-veto-r1p0, result_dir: ensemble_Union_veto_r1p0_test}
+- {name: Union-veto2-r1p0, result_dir: ensemble_Union_veto2_r1p0_test}
+- {name: Union-veto2-r0p01, result_dir: ensemble_Union_veto2_r0p01_test}
+- {name: Union-veto2-r0p05, result_dir: ensemble_Union_veto2_r0p05_test}
+- {name: Union-veto2-r0p1, result_dir: ensemble_Union_veto2_r0p1_test}
+- {name: Union-veto2-r0p25, result_dir: ensemble_Union_veto2_r0p25_test}
+- {name: Union-veto2-r0p5, result_dir: ensemble_Union_veto2_r0p5_test}
+- {name: Union-veto-oracle-r0p01, result_dir: ensemble_Union_veto_oracle_r0p01_test}
+- {name: Union-veto-oracle-r0p05, result_dir: ensemble_Union_veto_oracle_r0p05_test}
+- {name: Union-veto-oracle-r0p1, result_dir: ensemble_Union_veto_oracle_r0p1_test}
+- {name: Union-veto-oracle-r0p25, result_dir: ensemble_Union_veto_oracle_r0p25_test}
+- {name: Union-veto-oracle-r0p5, result_dir: ensemble_Union_veto_oracle_r0p5_test}
+- {name: Union-veto-oracle-r1p0, result_dir: ensemble_Union_veto_oracle_r1p0_test}
